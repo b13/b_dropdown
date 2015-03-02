@@ -15,38 +15,130 @@ module.exports = (grunt) ->
 			'* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> @ <%= pkg.company.name%>' +
 			' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n'
 
+
 		clean:
-			build: ['dist/*']
-			test:  ['test/js/*']
+			release: ['dist/*','tmp/*']
+			test   :  ['test/js/*','test/css/*']
+
 
 		coffee:
-			default:
+			build:
 				expand: true
 				flatten: true
 				cwd: ''
 				src: ['src/*.coffee']
-				dest: 'dist/'
+				dest: 'tmp/'
+				ext: '.js'
+			test:
+				options:
+					bare: true
+				expand: true
+				flatten: true
+				cwd: ''
+				src: ['test/coffee/*.coffee']
+				dest: 'test/js/'
 				ext: '.js'
 
-		# Task Configuration
-		copy:
-			dev:
-				files: [{expand:true, flatten:true, src:['dist/b_dropdown.js'], dest: 'test/js/'}]
+
+		concat:
+			build:
+				# Please keep in mind, that the order of the source files is important!
+				# Sources that depend on other sources must be after the source, they depend on.
+				src : ['tmp/b_dropdown-option.js','tmp/b_dropdown-base.js','tmp/b_dropdown-json.js','tmp/b_dropdown-select.js', 'tmp/b_dropdown.js']
+				dest: 'dist/b_dropdown.js'
+			test:
+				src : ['test/js/test.js', 'test/js/testApp.js' ]
+				dest: 'test/js/test.js'
+
 
 		concurrent:
-			dev:
-				tasks: ['nodemon', 'watch']
+			test:
+				tasks: ['nodemon:test', 'watch:test']
 				options:
 					logConcurrentOutput: true
 
+		copy:
+			build:
+				files: [
+					{
+						expand: true
+						flatten: true
+						src: ['src/b_dropdown.less']
+						dest: 'dist/'
+					}
+				]
+			test:
+				files: [
+					{
+						expand: true
+						flatten: true
+						src: [
+							'bower_components/jquery/dist/jquery.js'
+							'bower_components/requirejs/require.js'
+							'dist/b_dropdown.js'
+						]
+						dest: 'test/js/contrib/'
+					}
+				]
+
+		dalek:
+			options:
+#				browser: ['chrome']
+				dalekfile: false
+
+			test:
+				src: ['test/tests/baseTests.coffee']
+
+
+		less:
+			build:
+				options:
+					compress    : false,
+					yuicompress : false,
+					cleancss    : false,
+					optimization: null
+				files:
+					'dist/b_dropdown.css': 'src/b_dropdown.less'
+
+			buildMin:
+				options:
+					compress    : true,
+					yuicompress : true,
+					cleancss    : true,
+					optimization: 2
+				files:
+					'dist/b_dropdown.min.css': 'src/b_dropdown.less'
+
+			test:
+				options:
+					compress    : false,
+					yuicompress : false,
+					cleancss    : false,
+					optimization: null
+
+				files:
+					"test/css/test.css": "test/less/test.less"
+
+
 		nodemon:
-			dev:
+			test:
 				script: 'test/server/server.coffee'
 				options:
 					env:
 						PORT: config.testServerPort
 						DIRECTORY: config.testCodeDirectory
-					watch: ['test/server']
+					ignore: ['**']
+
+
+		requirejs:
+			test:
+				options:
+					name          : 'config'
+					mainConfigFile: 'test/js/config.js'
+					out           : 'test/js/test.js'
+					optimize      : 'none'
+					findNestedDependencies: true
+
 
 		uglify:
 			options:
@@ -56,29 +148,47 @@ module.exports = (grunt) ->
 				src: 'dist/b_dropdown.js'
 				dest: 'dist/b_dropdown.min.js'
 
+
 		watch:
-			script:
-				files: ['src/**/*.coffee']
-				tasks: ['clean:test', 'build:dev', 'copy:dev']
+			test:
+				files: ['src/**/*.coffee','src/**/*.less']
+				tasks: ['testBuild']
 
 
 	# These plugins provide necessary tasks.
+	grunt.loadNpmTasks 'grunt-concurrent'
 	grunt.loadNpmTasks 'grunt-contrib-clean'
 	grunt.loadNpmTasks 'grunt-contrib-coffee'
-	grunt.loadNpmTasks 'grunt-concurrent'
+	grunt.loadNpmTasks 'grunt-contrib-concat'
 	grunt.loadNpmTasks 'grunt-contrib-copy'
-	grunt.loadNpmTasks 'grunt-contrib-watch'
-	grunt.loadNpmTasks 'grunt-nodemon'
+	grunt.loadNpmTasks 'grunt-contrib-less'
+	grunt.loadNpmTasks 'grunt-contrib-requirejs'
 	grunt.loadNpmTasks 'grunt-contrib-uglify'
+	grunt.loadNpmTasks 'grunt-contrib-watch'
+	grunt.loadNpmTasks 'grunt-dalek'
+	grunt.loadNpmTasks 'grunt-nodemon'
 
-	grunt.registerTask 'build', (buildMode) ->
+#	grunt.registerTask 'build', (buildMode) ->
+#
+#		grunt.task.run ['clean:build']
+#		grunt.task.run ['coffee']
+#
+#		if not buildMode or buildMode is 'prod'
+#			grunt.task.run ['uglify']
 
-		grunt.task.run ['clean:build']
-		grunt.task.run ['coffee']
+	grunt.registerTask 'build', ['coffee:build', 'concat:build', 'copy:build','less:build','less:buildMin']
+	grunt.registerTask 'release', ['clean:release', 'build', 'uglify']
 
-		if not buildMode or buildMode is 'prod'
-			grunt.task.run ['uglify']
+	grunt.registerTask 'testBuild', ['clean:test', 'build', 'copy:test', 'coffee:test', 'requirejs:test', 'concat:test', 'less:test']
+	grunt.registerTask 'test', ['testBuild', 'concurrent:test']
 
+#	grunt.registerTask 'build', ["Build project"], (buildType) ->
+#
+#		buildType = buildType ? 'test'
+#
+#		grunt.task.run ['clean', 'coffee:build', 'concat:build']
 
-	grunt.registerTask 'dev', ['clean:test', 'build:dev', 'copy:dev', 'concurrent:dev']
-	grunt.registerTask 'release', ['build']
+#		if buildType is 'test'
+#			grunt.task.run ['coffee:test', 'less:test']
+#
+#		grunt.task.run ['requirejs:' + buildType, 'concat:' + buildType]
