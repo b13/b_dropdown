@@ -1,4 +1,5 @@
 B = B ? {}
+window.B = B
 
 require [
 		'jquery'
@@ -11,11 +12,11 @@ require [
 			initBaseDropdownWithDynamicHeader()
 
 		initBaseDropdownWithStaticHeader = () ->
-			new Dropdown.BaseDropdown $('#baseDropdown-staticHeader'),
+			B.baseDropdownStaticHeader = new Dropdown.BaseDropdown $('#baseDropdown-staticHeader'),
 				staticHeaderText: "Base Dropdown"
 
 		initBaseDropdownWithDynamicHeader = () ->
-			new Dropdown.BaseDropdown $('#baseDropdown-dynamicHeader'),
+			B.baseDropdownDynamicHeader = new Dropdown.BaseDropdown $('#baseDropdown-dynamicHeader'),
 				placeholderHeaderText: "Placeholder Text"
 
 		#document ready

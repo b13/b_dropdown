@@ -164,7 +164,7 @@ define 'b_dropdown-base',
 
 
 			selectOption: (indexOrElement, preventEvent) =>
-
+				dropdown = @
 				option = @getOption indexOrElement
 
 				if option
@@ -180,7 +180,7 @@ define 'b_dropdown-base',
 
 					if not preventEvent
 						for selectionHandler in @selectionHandlers
-							do (selectionHandler) ->
+							do (selectionHandler) =>
 								selectionHandler.call @,
 									dropdown : @
 									option   : option
