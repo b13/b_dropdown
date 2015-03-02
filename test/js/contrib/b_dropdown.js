@@ -128,13 +128,12 @@
 
       BaseDropdown.prototype._handleOptionSelection = function(evt) {
         var optionIndex;
-        if (this.isDisabled()) {
-          return void 0;
-        }
-        optionIndex = this.$options.index($(evt.currentTarget));
-        this.selectOption(optionIndex);
-        if (this.opts.closeOnSelect) {
-          return this.close();
+        if (!this.isDisabled()) {
+          optionIndex = this.$options.index($(evt.currentTarget));
+          this.selectOption(optionIndex);
+          if (this.opts.closeOnSelect) {
+            return this.close();
+          }
         }
       };
 
@@ -161,6 +160,9 @@
       };
 
       BaseDropdown.prototype.close = function() {
+        if (this.isDisabled()) {
+          return void 0;
+        }
         this.$menu.hide();
         return this.data.isOpen = false;
       };
@@ -248,6 +250,9 @@
       };
 
       BaseDropdown.prototype.open = function() {
+        if (this.isDisabled()) {
+          return void 0;
+        }
         this.$menu.show();
         return this.data.isOpen = true;
       };
