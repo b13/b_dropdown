@@ -1,0 +1,49 @@
+.b_dropdown {
+
+	display: inline-block;
+
+	//Hide the outline on focus
+	input:focus,
+	select:focus,
+	textarea:focus,
+	button:focus {
+		outline: none;
+	}
+
+	ul, &-toggle {
+		background-color: #ffffff;
+		border: solid 1px #cccccc;
+	}
+
+	ul {
+		display: none;
+		position: absolute;
+		top: -1px;
+		min-width: 100%;
+		padding: 10px 20px;
+		list-style: none;
+	}
+
+	li {
+		white-space: nowrap;
+	}
+
+	&-toggle:after {
+		content: "\25bc";
+		margin-left: 0.6em;
+		font-size: 0.8em;
+	}
+
+	&-menuWrap {
+		position: relative;
+		height: 0;
+	}
+
+	&-disabled {
+		color: #cccccc;
+
+		.b_dropdown-toggle {
+			background-color: #eeeeee;
+		}
+	}
+}
