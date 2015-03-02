@@ -1,0 +1,21 @@
+{
+  "name": "b_dropdown",
+  "description": "b_dropdown",
+  "homepage": "https://github.com/b13/b_dropdown",
+  "main": "dist/b_dropdown.js",
+  "version": "0.0.1",
+  "dependencies": {
+    "bootstrap": ">= 2.3.1",
+    "jquery": ">= 1.11.2"
+  },
+  "ignore": [
+    "./Gruntfile.js",
+    "package.json",
+    "test/",
+    "tmp/"
+  ],
+  "devDependencies": {
+    "requirejs": "~2.1.15",
+    "bootstrap": "~3.3.2"
+  }
+}
