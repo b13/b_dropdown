@@ -59,11 +59,11 @@ define 'b_dropdown-base',
 
 
 			_handleOptionSelection: (evt) =>
-				if @isDisabled() then return undefined;
-				optionIndex = @$options.index $ evt.currentTarget
+				if not @isDisabled()
+					optionIndex = @$options.index $ evt.currentTarget
 
-				@selectOption optionIndex
-				if @opts.closeOnSelect then @close()
+					@selectOption optionIndex
+					if @opts.closeOnSelect then @close()
 
 
 			_handleWindowClick: (evt) =>
@@ -87,6 +87,7 @@ define 'b_dropdown-base',
 
 
 			close: () =>
+				if @isDisabled() then return undefined
 				@$menu.hide()
 				@data.isOpen = false
 
@@ -159,6 +160,7 @@ define 'b_dropdown-base',
 
 
 			open: () =>
+				if @isDisabled() then return undefined
 				@$menu.show()
 				@data.isOpen = true
 
