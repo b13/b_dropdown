@@ -168,13 +168,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-dalek'
 	grunt.loadNpmTasks 'grunt-nodemon'
 
-#	grunt.registerTask 'build', (buildMode) ->
-#
-#		grunt.task.run ['clean:build']
-#		grunt.task.run ['coffee']
-#
-#		if not buildMode or buildMode is 'prod'
-#			grunt.task.run ['uglify']
 
 	grunt.registerTask 'build', ['coffee:build', 'concat:build', 'copy:build','less:build','less:buildMin']
 	grunt.registerTask 'release', ['clean:release', 'build', 'uglify']
@@ -182,13 +175,3 @@ module.exports = (grunt) ->
 	grunt.registerTask 'testBuild', ['clean:test', 'build', 'copy:test', 'coffee:test', 'requirejs:test', 'concat:test', 'less:test']
 	grunt.registerTask 'test', ['testBuild', 'concurrent:test']
 
-#	grunt.registerTask 'build', ["Build project"], (buildType) ->
-#
-#		buildType = buildType ? 'test'
-#
-#		grunt.task.run ['clean', 'coffee:build', 'concat:build']
-
-#		if buildType is 'test'
-#			grunt.task.run ['coffee:test', 'less:test']
-#
-#		grunt.task.run ['requirejs:' + buildType, 'concat:' + buildType]
