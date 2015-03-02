@@ -253,7 +253,8 @@
       };
 
       BaseDropdown.prototype.selectOption = function(indexOrElement, preventEvent) {
-        var option, selectionHandler, timestamp, _i, _len, _ref, _results;
+        var dropdown, option, selectionHandler, timestamp, _i, _len, _ref, _results;
+        dropdown = this;
         option = this.getOption(indexOrElement);
         if (option) {
           timestamp = new Date();
@@ -268,13 +269,15 @@
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               selectionHandler = _ref[_i];
-              _results.push((function(selectionHandler) {
-                return selectionHandler.call(this, {
-                  dropdown: this,
-                  option: option,
-                  timestamp: timestamp
-                });
-              })(selectionHandler));
+              _results.push((function(_this) {
+                return function(selectionHandler) {
+                  return selectionHandler.call(_this, {
+                    dropdown: _this,
+                    option: option,
+                    timestamp: timestamp
+                  });
+                };
+              })(this)(selectionHandler));
             }
             return _results;
           }
