@@ -24,12 +24,12 @@ require(['jquery', 'b_dropdown'], function($, Dropdown) {
     return initBaseDropdownWithDynamicHeader();
   };
   initBaseDropdownWithStaticHeader = function() {
-    return B.baseDropdownStaticHeader = new Dropdown.BaseDropdown($('#baseDropdown-staticHeader'), {
+    return B.baseDropdownStaticHeader = new Dropdown($('#baseDropdown-staticHeader'), {
       staticHeaderText: "Base Dropdown"
     });
   };
   initBaseDropdownWithDynamicHeader = function() {
-    return B.baseDropdownDynamicHeader = new Dropdown.BaseDropdown($('#baseDropdown-dynamicHeader'), {
+    return B.baseDropdownDynamicHeader = new Dropdown($('#baseDropdown-dynamicHeader'), {
       placeholderHeaderText: "Placeholder Text"
     });
   };

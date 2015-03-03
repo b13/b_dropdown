@@ -12,11 +12,11 @@ require [
 			initBaseDropdownWithDynamicHeader()
 
 		initBaseDropdownWithStaticHeader = () ->
-			B.baseDropdownStaticHeader = new Dropdown.BaseDropdown $('#baseDropdown-staticHeader'),
+			B.baseDropdownStaticHeader = new Dropdown $('#baseDropdown-staticHeader'),
 				staticHeaderText: "Base Dropdown"
 
 		initBaseDropdownWithDynamicHeader = () ->
-			B.baseDropdownDynamicHeader = new Dropdown.BaseDropdown $('#baseDropdown-dynamicHeader'),
+			B.baseDropdownDynamicHeader = new Dropdown $('#baseDropdown-dynamicHeader'),
 				placeholderHeaderText: "Placeholder Text"
 
 		#document ready
