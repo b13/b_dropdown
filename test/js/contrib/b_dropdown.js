@@ -330,6 +330,7 @@
     var Dropdown, Option, __setElementAttribute;
     Dropdown = (function() {
       Dropdown.prototype.defaultOpts = {
+        closeOnClickOutside: true,
         closeOnSelect: true
       };
 
@@ -480,6 +481,7 @@
       Dropdown.prototype._handleOptionSelection = function(evt) {
         var optionIndex;
         if (!this.isDisabled()) {
+          evt.preventDefault();
           optionIndex = this.$options.index($(evt.currentTarget));
           this.select(optionIndex);
           if (this.opts.closeOnSelect) {
@@ -489,7 +491,7 @@
       };
 
       Dropdown.prototype._handleWindowClick = function(evt) {
-        if (!this.isDisabled() && this.isOpen() && !$.contains(this.$el.get(0), evt.target)) {
+        if (!this.isDisabled() && this.isOpen() && this.opts.closeOnClickOutside && !$.contains(this.$el.get(0), evt.target)) {
           return this.close();
         }
       };
@@ -618,7 +620,7 @@
       };
 
       Dropdown.prototype.select = function(indexOrElement, preventEvent) {
-        var option, selectionHandler, timestamp, _i, _len, _ref, _results;
+        var option, selectionHandler, timestamp, _fn, _i, _len, _ref;
         option = this.getOption(indexOrElement);
         if (option) {
           timestamp = new Date();
@@ -630,20 +632,22 @@
           this.$hiddenInput.val(option.getValue());
           if (!preventEvent) {
             _ref = this.selectionHandlers;
-            _results = [];
+            _fn = (function(_this) {
+              return function(selectionHandler) {
+                return selectionHandler.call(_this, {
+                  dropdown: _this,
+                  option: option,
+                  timestamp: timestamp
+                });
+              };
+            })(this);
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               selectionHandler = _ref[_i];
-              _results.push((function(_this) {
-                return function(selectionHandler) {
-                  return selectionHandler.call(_this, {
-                    dropdown: _this,
-                    option: option,
-                    timestamp: timestamp
-                  });
-                };
-              })(this)(selectionHandler));
+              _fn(selectionHandler);
             }
-            return _results;
+          }
+          if (option.isLink && !this.opts.preventLinkNavigation) {
+            return this.navigateToLink(option.href);
           }
         } else {
           return this.resetSelection();
@@ -672,6 +676,7 @@
     })();
     Option = (function() {
       function Option(dropdown, option) {
+        var $linkEl;
         this.dropdown = dropdown;
         if (option instanceof Option) {
           this.$el = option.$el;
@@ -685,7 +690,9 @@
         } else {
           throw "Provided argument is neither a html element nor a number";
         }
-        this.isLink = this.$el.find('a').length ? true : false;
+        $linkEl = this.$el.find('a');
+        this.isLink = $linkEl.length ? true : false;
+        this.href = $linkEl.attr('href');
       }
 
       Option.prototype.get$El = function() {
