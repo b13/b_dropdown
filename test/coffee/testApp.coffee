@@ -20,6 +20,7 @@ require [
 
 		initBaseDropdownWithDynamicHeader = () ->
 			B.baseDropdownDynamicHeader = new Dropdown $('#baseDropdown-dynamicHeader'),
+				name: "overrodeTheOldName"
 				placeholder: "Placeholder Text"
 
 

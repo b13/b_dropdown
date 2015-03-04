@@ -31,6 +31,7 @@ require(['jquery', 'b_dropdown'], function($, Dropdown) {
   };
   initBaseDropdownWithDynamicHeader = function() {
     return B.baseDropdownDynamicHeader = new Dropdown($('#baseDropdown-dynamicHeader'), {
+      name: "overrodeTheOldName",
       placeholder: "Placeholder Text"
     });
   };
