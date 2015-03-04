@@ -146,6 +146,7 @@ define 'b_dropdown',
 
 			_handleOptionSelection: (evt) =>
 				if not @isDisabled()
+					evt.preventDefault()
 					optionIndex = @$options.index $ evt.currentTarget
 
 					@select optionIndex
@@ -283,6 +284,9 @@ define 'b_dropdown',
 									option   : option
 									timestamp: timestamp
 
+					if option.isLink and not @opts.preventLinkNavigation
+						@navigateToLink option.href
+
 				else
 					#Reset dropdown value if no valid index or element is provided
 					@resetSelection()
@@ -323,7 +327,9 @@ define 'b_dropdown',
 				else
 					throw "Provided argument is neither a html element nor a number"
 
-				@isLink = if @$el.find('a').length then true else false
+				$linkEl =  @$el.find 'a'
+				@isLink = if $linkEl.length then true else false
+				@href   = $linkEl.attr 'href'
 
 
 			get$El: () ->
