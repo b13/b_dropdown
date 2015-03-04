@@ -6,6 +6,7 @@ define 'b_dropdown',
 		class Dropdown
 
 			defaultOpts:
+				closeOnClickOutside: true
 				closeOnSelect: true
 
 			constructor: (el, opts) ->
@@ -153,7 +154,7 @@ define 'b_dropdown',
 
 
 			_handleWindowClick: (evt) =>
-				if not @isDisabled() and @isOpen() and not $.contains @$el.get(0), evt.target
+				if not @isDisabled() and @isOpen() and @opts.closeOnClickOutside and not $.contains @$el.get(0), evt.target
 					@close()
 
 
