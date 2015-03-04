@@ -110,13 +110,8 @@ define 'b_dropdown',
 				$optionsEls.each () ->
 					nextOptionObject = {}
 					$option = $ @
-					$link   = $option.children 'a'
 					nextOptionObject.label   = $option.text() or ""
 					nextOptionObject.value   = $option.val() or nextOptionObject.label
-
-					if $link.length
-						nextOptionObject.isLink = true
-						nextOptionObject.href = $link.attr 'href'
 
 					optionsArray.push nextOptionObject
 
