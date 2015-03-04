@@ -96,6 +96,7 @@ In this case b_dropdown expects that there is already a html structure that is s
 
 Option | Type | Default | Description
 ------ | ---- | ------- | ------------
+closeOnClickOutside | boolean | true | Menu will be closed on click outside of the dropdown menu
 closeOnSelect | boolean | true | Menu will be closed on option selection
 options | array | undefined | Array with option definitions. An option can be either a string, in this case the string is used as label and value, or a object that contains at least a value field and optionally a label field.<br>Examples:<br>["Option 1", "Option2", . . . ]<br><br>[<br>{ label: 'Option 1', value: '1' }<br>{ label: 'Option 2', value: '2' }<br> . . . ]
 placeholder | string | undefined | Header text that is displayed if no option is selected
