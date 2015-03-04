@@ -2,8 +2,8 @@
   "name": "b_dropdown",
   "description": "b_dropdown",
   "homepage": "https://github.com/b13/b_dropdown",
-  "main": "dist/b_dropdown.min.js",
-  "version": "0.0.1",
+  "main": "dist/b_dropdown.js",
+  "version": "0.1.0",
   "dependencies": {
     "bootstrap": ">= 2.3.1",
     "jquery": ">= 1.11.2"

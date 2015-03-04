@@ -5,19 +5,26 @@ B = B != null ? B : {};
 window.B = B;
 
 require(['jquery', 'b_dropdown'], function($, Dropdown) {
-  var initBaseDropdownWithDynamicHeader, initBaseDropdownWithStaticHeader, initialize;
+  var initBaseDropdownWithDynamicHeader, initBaseDropdownWithStaticHeader, initSelectBasedDropdown, initialize;
   initialize = function() {
     initBaseDropdownWithStaticHeader();
-    return initBaseDropdownWithDynamicHeader();
+    initBaseDropdownWithDynamicHeader();
+    return initSelectBasedDropdown();
   };
   initBaseDropdownWithStaticHeader = function() {
     return B.baseDropdownStaticHeader = new Dropdown($('#baseDropdown-staticHeader'), {
-      staticHeaderText: "Base Dropdown"
+      staticHeader: "Base Dropdown"
     });
   };
   initBaseDropdownWithDynamicHeader = function() {
     return B.baseDropdownDynamicHeader = new Dropdown($('#baseDropdown-dynamicHeader'), {
-      placeholderHeaderText: "Placeholder Text"
+      name: "overrodeTheOldName",
+      placeholder: "Placeholder Text"
+    });
+  };
+  initSelectBasedDropdown = function() {
+    return B.selectBasedDropdown = new Dropdown($('#selectDropdown'), {
+      placeholder: "Please select"
     });
   };
   return $(function() {

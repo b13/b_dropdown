@@ -2,20 +2,51 @@ define 'b_dropdown',
 	['jquery'],
 	($) ->
 
+
 		class Dropdown
 
 			defaultOpts:
+				closeOnClickOutside: true
 				closeOnSelect: true
 
 			constructor: (el, opts) ->
 
-				@opts = $.extend {}, @defaultOpts, opts or {}
+				$el = $ el
+				isWrappedByForm = Boolean $el.closest('form').length
 
-				@$el           = $ el
-				@$toggleHeader = @$el.find '.b_dropdown-toggle'
-				@$menu         = @$el.find 'ul'
-				@$options      = @$menu.children 'li'
-				@$hiddenInput  = @$el.find 'input[type=hidden]'
+				@opts = $.extend {}, @defaultOpts, opts or {}
+				
+				if @opts.options
+					jSONOptions = @opts.options
+
+				if $el.prop('tagName') is 'SELECT'
+					attrs = $el.prop 'attributes'
+					if not @opts.name then @opts.name  = $el.attr 'name'
+
+					if not jSONOptions then jSONOptions = @_getJSONDataFromSelectStructure $el
+
+					$replacement = $ '<div></div>'
+					$el.after $replacement
+					$el.remove()
+					$el = $replacement
+
+					__setElementAttribute $el, attribute for attribute in attrs
+
+					$el.addClass 'b_dropdown'
+
+
+				if jSONOptions
+					$el.empty()
+					@_renderInnerHTMLFromJSON $el, jSONOptions, isWrappedByForm
+
+				@$el = $el
+
+				if not @$toggleHeader then @$toggleHeader = @$el.find '.b_dropdown-toggle'
+				if not @$menu         then @$menu         = @$el.find 'ul'
+				if not @$options      then @$options      = @$menu.children 'li'
+				if not @$hiddenInput  then @$hiddenInput  = @$el.find 'input[type=hidden]'
+
+				if @opts.name then @$hiddenInput.attr 'name', @opts.name
 
 				@selectionHandlers = []
 
@@ -24,15 +55,73 @@ define 'b_dropdown',
 					isDisabled: false
 					ddOptions   : @_initDropdownOptions()
 
-				if @opts.staticHeaderText
-					@$toggleHeader.html '<span>' + @opts.staticHeaderText + '</span>'
-				else
-					if @opts.placeholderHeaderText
-						@$toggleHeader.html '<span>' + @opts.placeholderHeaderText + '</span>'
+				# Set static header if provided
+				if @opts.staticHeader
+					@$toggleHeader.html '<span>' + @opts.staticHeader + '</span>'
 
-				@close()
+				# Select initial option if provided or close the menu
+				if @opts.selectedOption? and @opts.selectedOption >= 0
+					@select @opts.selectedOption
+				else
+					@select -1
 
 				@bindEvents()
+
+
+			_renderInnerHTMLFromJSON: ($targetEl, jSONOptions, isWrappedByForm) ->
+
+				@toggleHeader = $ '<button class="b_dropdown-toggle"></button>'
+				$targetEl.append @toggleHeader
+
+				$menuWrap = $ '<div class="b_dropdown-menuWrap"></div>'
+				$targetEl.append $menuWrap
+
+				@$menu = $ '<ul></ul>'
+				$menuWrap.append @$menu
+
+				for option in jSONOptions
+					if typeof option is 'string'
+						label = option
+						value = option
+					else
+						value = option.value
+						label = option.label or value
+						isLink = option.isLink or false
+
+					$newOptionEl = $ '<li data-value="' + value + '"></li>'
+					@$menu.append $newOptionEl
+
+					if isLink
+						$newLink = $ '<a href="' + (option.href or "") + '"></a>'
+						$newOptionEl.append $newLink
+
+					$newOptionEl.text label
+
+				@$hiddenInput = $ '<input type="hidden"></input>'
+				$targetEl.append @$hiddenInput
+
+				if isWrappedByForm then @$hiddenInput.wrap '<form></form>'
+
+
+				#Extract json data form a given html select-option structure
+			_getJSONDataFromSelectStructure: ($selectElement) ->
+				optionsArray = []
+				$optionsEls = $selectElement.children 'option'
+				$optionsEls.each () ->
+					nextOptionObject = {}
+					$option = $ @
+					$link   = $option.children 'a'
+					nextOptionObject.label   = $option.text() or ""
+					nextOptionObject.value   = $option.val() or nextOptionObject.label
+
+					if $link.length
+						nextOptionObject.isLink = true
+						nextOptionObject.href = $link.attr 'href'
+
+					optionsArray.push nextOptionObject
+
+				return optionsArray
+
 
 			_initDropdownOptions: () ->
 				dropddown = @
@@ -57,14 +146,16 @@ define 'b_dropdown',
 
 			_handleOptionSelection: (evt) =>
 				if not @isDisabled()
+					evt.preventDefault()
 					optionIndex = @$options.index $ evt.currentTarget
 
-					@selectOption optionIndex
+					@select optionIndex
+
 					if @opts.closeOnSelect then @close()
 
 
 			_handleWindowClick: (evt) =>
-				if not @isDisabled() and @isOpen() and not $.contains @$el.get(0), evt.target
+				if not @isDisabled() and @isOpen() and @opts.closeOnClickOutside and not $.contains @$el.get(0), evt.target
 					@close()
 
 
@@ -162,7 +253,16 @@ define 'b_dropdown',
 				@data.isOpen = true
 
 
-			selectOption: (indexOrElement, preventEvent) =>
+			resetSelection: () =>
+				@data.selectedOption = undefined
+				@$hiddenInput.val ''
+
+				if not @opts.staticHeader
+					@$toggleHeader.empty()
+					@$toggleHeader.html @opts.placeholder or ""
+
+
+			select: (indexOrElement, preventEvent) =>
 				option = @getOption indexOrElement
 
 				if option
@@ -170,7 +270,7 @@ define 'b_dropdown',
 
 					@data.selectedOption = option
 
-					if not @opts.staticHeaderText
+					if not @opts.staticHeader
 						@$toggleHeader.empty()
 						@$toggleHeader.html option.getLabel()
 
@@ -183,6 +283,13 @@ define 'b_dropdown',
 									dropdown : @
 									option   : option
 									timestamp: timestamp
+
+					if option.isLink and not @opts.preventLinkNavigation
+						@navigateToLink option.href
+
+				else
+					#Reset dropdown value if no valid index or element is provided
+					@resetSelection()
 
 
 			toggle: () =>
@@ -220,7 +327,9 @@ define 'b_dropdown',
 				else
 					throw "Provided argument is neither a html element nor a number"
 
-				@isLink = if @$el.find('a').length then true else false
+				$linkEl =  @$el.find 'a'
+				@isLink = if $linkEl.length then true else false
+				@href   = $linkEl.attr 'href'
 
 
 			get$El: () ->
@@ -258,6 +367,12 @@ define 'b_dropdown',
 
 			isLink: () ->
 				return @isLink
+
+
+		#Helper functions
+		__setElementAttribute = ($el, attribute) ->
+			if attribute.nodeName isnt 'name'
+				$el.attr attribute.nodeName, attribute.value
 
 
 		return Dropdown
