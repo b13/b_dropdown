@@ -10,14 +10,23 @@ require [
 		initialize = () ->
 			initBaseDropdownWithStaticHeader()
 			initBaseDropdownWithDynamicHeader()
+			initSelectBasedDropdown()
+
 
 		initBaseDropdownWithStaticHeader = () ->
-			B.baseDropdownStaticHeader = new Dropdown.BaseDropdown $('#baseDropdown-staticHeader'),
-				staticHeaderText: "Base Dropdown"
+			B.baseDropdownStaticHeader = new Dropdown $('#baseDropdown-staticHeader'),
+				staticHeader: "Base Dropdown"
+
 
 		initBaseDropdownWithDynamicHeader = () ->
-			B.baseDropdownDynamicHeader = new Dropdown.BaseDropdown $('#baseDropdown-dynamicHeader'),
-				placeholderHeaderText: "Placeholder Text"
+			B.baseDropdownDynamicHeader = new Dropdown $('#baseDropdown-dynamicHeader'),
+				placeholder: "Placeholder Text"
+
+
+		initSelectBasedDropdown = () ->
+			B.selectBasedDropdown = new Dropdown $('#selectDropdown'),
+				placeholder: "Please select"
+
 
 		#document ready
 		$ () ->

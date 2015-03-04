@@ -21,6 +21,7 @@
   list-style: none;
 }
 .b_dropdown li {
+  cursor: pointer;
   white-space: nowrap;
 }
 .b_dropdown-toggle:after {
