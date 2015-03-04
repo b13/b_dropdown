@@ -65,7 +65,7 @@ define 'b_dropdown',
 				else
 					@select -1
 
-				@bindEvents()
+				@_bindEvents()
 
 
 			_renderInnerHTMLFromJSON: ($targetEl, jSONOptions, isWrappedByForm) ->
@@ -128,13 +128,13 @@ define 'b_dropdown',
 				return ddOptions;
 
 
-			bindEvents: () ->
+			_bindEvents: () ->
 				@$toggleHeader.on 'click', @toggle
 				@$options.on 'click', @_handleOptionSelection
 				$(window).on 'click', @_handleWindowClick
 
 
-			unbindEvents: () ->
+			_unbindEvents: () ->
 				@$toggleHeader.off 'click', @toggle
 				$(window).off 'click', @_handleWindowClick
 
@@ -156,6 +156,7 @@ define 'b_dropdown',
 
 			onSelectOption: (selectionHandler) ->
 				@selectionHandlers.push selectionHandler
+				return selectionHandler
 
 
 			offSelectOption: (selectionHandler) ->
@@ -163,16 +164,23 @@ define 'b_dropdown',
 
 				if handlerIndex >= 0
 					@selectionHandlers.splice handlerIndex, 1
+					return selectionHandler
+
+				return undefined
 
 
 			removeAllHandlers: () ->
+				removedHandlers = @selectionHandlers
 				@selectionHandlers = []
+				return removedHandlers
 
 
 			close: () =>
-				if @isDisabled() then return undefined
-				@$menu.hide()
-				@data.isOpen = false
+				if not @isDisabled()
+					@$menu.hide()
+					@data.isOpen = false
+
+				return @
 
 
 			disable: () ->
@@ -180,12 +188,14 @@ define 'b_dropdown',
 				@$el.addClass 'b_dropdown-disabled'
 				@$hiddenInput.prop 'disabled', true
 				@data.isDisabled = true
+				return @
 
 
 			enable: () ->
 				@$el.removeClass 'b_dropdown-disabled'
 				@$hiddenInput.prop 'disabled', false
 				@data.isDisabled = false
+				return @;
 
 
 			getOption: (indexOrElement) ->
@@ -212,7 +222,7 @@ define 'b_dropdown',
 
 
 			getOptionByIndex: (optionIndex) ->
-				return if @data.ddOptions.length > optionIndex then @data.ddOptions[optionIndex] else null
+				return if @data.ddOptions.length > optionIndex then @data.ddOptions[optionIndex] else undefined
 
 
 			getSelectedIndex: () ->
@@ -222,16 +232,16 @@ define 'b_dropdown',
 
 			getSelectedLabel: () ->
 				selectedOption = @getSelectedOption()
-				return if selectedOption then selectedOption.getLabel() else null
+				return if selectedOption then selectedOption.getLabel() else undefined
 
 
 			getSelectedOption: () ->
-				return @data.selectedOption or null
+				return @data.selectedOption or undefined
 
 
 			getSelectedValue: () ->
 				selectedOption = @getSelectedOption()
-				return if selectedOption then selectedOption.getValue() else null
+				return if selectedOption then selectedOption.getValue() else undefined
 
 
 			isDisabled: () ->
@@ -240,12 +250,14 @@ define 'b_dropdown',
 
 			navigateToLink: (link) ->
 				location.href = link
+				return link
 
 
 			open: () =>
-				if @isDisabled() then return undefined
-				@$menu.show()
-				@data.isOpen = true
+				if not @isDisabled()
+					@$menu.show()
+					@data.isOpen = true
+				return @
 
 
 			resetSelection: () =>
@@ -255,6 +267,8 @@ define 'b_dropdown',
 				if not @opts.staticHeader
 					@$toggleHeader.empty()
 					@$toggleHeader.html @opts.placeholder or ""
+
+				return @
 
 
 			select: (indexOrElement, preventEvent) =>
@@ -286,9 +300,12 @@ define 'b_dropdown',
 					#Reset dropdown value if no valid index or element is provided
 					@resetSelection()
 
+				return option
+
 
 			toggle: () =>
 				if @isOpen() then @close() else @open()
+				return @
 
 
 			isOpen: () ->
@@ -297,7 +314,9 @@ define 'b_dropdown',
 
 			destroy: () ->
 				@enable()
-				@unbindEvents()
+				@_unbindEvents()
+				delete @
+				return undefined
 
 
 		# Private dropdown option helper class
@@ -322,6 +341,7 @@ define 'b_dropdown',
 				else
 					throw "Provided argument is neither a html element nor a number"
 
+				if not @index? then @index = @dropdown.$options.index @$el
 				$linkEl =  @$el.find 'a'
 				@isLink = if $linkEl.length then true else false
 				@href   = $linkEl.attr 'href'
@@ -331,7 +351,7 @@ define 'b_dropdown',
 				return @$el
 
 
-			getIndex: (refresh) ->
+			getIndex: () ->
 				if refresh or not @index?
 					@index = @dropdown.$options.index @$el
 
@@ -342,6 +362,11 @@ define 'b_dropdown',
 				if refresh or not @label?
 					@label = @$el.text()
 				return @label
+
+
+			getUrl: (refresh) ->
+
+				return if @isLink and @href? then @href else undefined
 
 
 			getValue: (refresh) ->
