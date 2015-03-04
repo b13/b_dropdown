@@ -19,10 +19,10 @@ define 'b_dropdown',
 					jSONOptions = @opts.options
 
 				if $el.prop('tagName') is 'SELECT'
-					attrs = $el.prop "attributes"
-					console.log attrs
-					$parentEl = $el.parent()
-					jSONOptions = @_getJSONDataFromSelectStructure $el
+					attrs = $el.prop 'attributes'
+					if not @opts.name then @opts.name  = $el.attr 'name'
+
+					if not jSONOptions then jSONOptions = @_getJSONDataFromSelectStructure $el
 
 					$replacement = $ '<div></div>'
 					$el.after $replacement
@@ -35,6 +35,7 @@ define 'b_dropdown',
 
 
 				if jSONOptions
+					$el.empty()
 					@_renderInnerHTMLFromJSON $el, jSONOptions, isWrappedByForm
 
 				@$el = $el
@@ -43,6 +44,8 @@ define 'b_dropdown',
 				if not @$menu         then @$menu         = @$el.find 'ul'
 				if not @$options      then @$options      = @$menu.children 'li'
 				if not @$hiddenInput  then @$hiddenInput  = @$el.find 'input[type=hidden]'
+
+				if @opts.name then @$hiddenInput.attr 'name', @opts.name
 
 				@selectionHandlers = []
 
@@ -65,8 +68,7 @@ define 'b_dropdown',
 
 
 			_renderInnerHTMLFromJSON: ($targetEl, jSONOptions, isWrappedByForm) ->
-				console.log "RENDER INNER HTML"
-				console.log $targetEl
+
 				@toggleHeader = $ '<button class="b_dropdown-toggle"></button>'
 				$targetEl.append @toggleHeader
 
@@ -362,7 +364,8 @@ define 'b_dropdown',
 
 		#Helper functions
 		__setElementAttribute = ($el, attribute) ->
-			$el.attr attribute.nodeName, attribute.value
+			if attribute.nodeName isnt 'name'
+				$el.attr attribute.nodeName, attribute.value
 
 
 		return Dropdown
