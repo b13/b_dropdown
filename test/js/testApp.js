@@ -5,13 +5,15 @@ B = B != null ? B : {};
 window.B = B;
 
 require(['jquery', 'b_dropdown'], function($, Dropdown) {
-  var initBasedDropdown, initialize;
+  var initBaseDropdown, initialize;
   initialize = function() {
-    return initBasedDropdown();
+    B.DropdownClass = Dropdown;
+    return initBaseDropdown();
   };
-  initBasedDropdown = function() {
+  initBaseDropdown = function() {
     return B.selectBasedDropdown = new Dropdown($('#selectDropdown'), {
-      placeholder: "Please select"
+      firstOptionIsPlaceholder: true,
+      selectedOption: 4
     });
   };
   return $(function() {

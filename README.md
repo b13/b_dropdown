@@ -101,8 +101,7 @@ In this case b_dropdown expects that there is already a html structure that is s
 
 Option | Type | Default | Description
 ------ | ---- | ------- | ------------
-useFirstOptionAsPlaceholder | false | The first select option will be treated as placeholder.
-placeholder | string | undefined | Header text that is displayed if no option is selected.
+firstOptionIsPlaceholder | false | The first select option will be treated as placeholder.
 selectedOption | number | undefined | Index of the option that should be selected initially.
 staticHeader | string | undefined | Static text stays in the header, even if an option is selected.
 

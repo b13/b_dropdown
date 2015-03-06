@@ -81,14 +81,6 @@ module.exports = (grunt) ->
 					}
 				]
 
-		dalek:
-			options:
-#				browser: ['chrome']
-				dalekfile: false
-
-			test:
-				src: ['test/tests/baseTests.coffee']
-
 
 		less:
 			build:
@@ -165,7 +157,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-contrib-requirejs'
 	grunt.loadNpmTasks 'grunt-contrib-uglify'
 	grunt.loadNpmTasks 'grunt-contrib-watch'
-	grunt.loadNpmTasks 'grunt-dalek'
 	grunt.loadNpmTasks 'grunt-nodemon'
 
 
