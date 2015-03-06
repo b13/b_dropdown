@@ -5,7 +5,7 @@
     var Dropdown, Option;
     Dropdown = (function() {
       Dropdown.prototype.defaultOpts = {
-        disabled: void 0,
+        disabled: true,
         firstOptionIsPlaceholder: false,
         hideOriginalSelect: true
       };
