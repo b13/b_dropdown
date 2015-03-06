@@ -6,11 +6,12 @@ define 'b_dropdown',
 		class Dropdown
 
 			defaultOpts:
-				firstOptionIsPlaceholder: false
-				hideOriginalSelect: true
+				disabled                 : undefined
+				firstOptionIsPlaceholder : false
+				hideOriginalSelect       : true
+
 
 			constructor: (el, opts) ->
-
 				@$selectEl = $ el
 				@$realOptions = @$selectEl.children 'option'
 
@@ -29,17 +30,17 @@ define 'b_dropdown',
 					@opts.selectedOption = renderData.selectedOption
 
 				# Set the top element of the mock structure
-				@$mockEl = $ '<div class="b_dropdown"></div>'
-				@$selectEl.after @$mockEl
+				@$mockEl = $ '<div class="bJS_md_dropdown b_md_dropdown"></div>'
+				@$selectEl.before @$mockEl
 
-				# Add b_dropdown styling class to the select element
-				@$selectEl.addClass 'b_dropdown-select'
+				# Add b_md_dropdown styling class to the select element
+				@$selectEl.addClass 'b_md_dropdown-select'
 
 				# Render the mock structure based on the extracted information from the select structure
 				@_renderMockHTMLFromData @$mockEl, renderData
 
 				# Get jQuery collections that wrap important HTML elements of the mock structure
-				@$mockToggleHeader = @$mockEl.find '.b_dropdown-toggle'
+				@$mockToggleHeader = @$mockEl.find '.bJS_md_dropdown-toggle'
 				@$mockMenu         = @$mockEl.find 'ul'
 				@$mockOptions      = @$mockMenu.children 'li'
 
@@ -49,7 +50,7 @@ define 'b_dropdown',
 					isDisabled : false
 					ddOptions  : @_initDropdownOptions()
 
-				# Array in which the b_dropdown change handlers will be stored
+				# Array in which the b_md_dropdown change handlers will be stored
 				@changeHandlers = []
 
 				# Set static header to mock header if provided
@@ -66,9 +67,13 @@ define 'b_dropdown',
 				else
 					@select 0, true
 
-				# Trigger initial disable if select is disabled
-				if @$selectEl.prop 'disabled'
+
+				# Disable select if opts disabled is true
+				if @opts.disabled is false
+					@enable()
+				else if @opts.disabled or @$selectEl.prop 'disabled'
 					@disable()
+
 
 				# Bind all events
 				@_bindEvents()
@@ -82,9 +87,9 @@ define 'b_dropdown',
 			###
 			_renderMockHTMLFromData: ($targetEl, renderData) ->
 
-				$targetEl.append $ '<button class="b_dropdown-toggle"></button>'
+				$targetEl.append $ '<button class="bJS_md_dropdown-toggle b_md_dropdown-toggle"></button>'
 
-				$mockMenuWrap = $ '<div class="b_dropdown-menuWrap"></div>'
+				$mockMenuWrap = $ '<div class="b_md_dropdown-menuWrap"></div>'
 				$targetEl.append $mockMenuWrap
 
 				$mockMenu = $ '<ul></ul>'
@@ -103,10 +108,10 @@ define 'b_dropdown',
 
 					$newOptionEl.text label
 					if option.disabled
-						$newOptionEl.addClass 'b_dropdown-disabled'
+						$newOptionEl.addClass 'b_md_dropdown-disabled'
 
 					if i is 0 and	@opts.firstOptionIsPlaceholder
-						$newOptionEl.addClass 'b_dropdown-placeholder'
+						$newOptionEl.addClass 'b_md_dropdown-placeholder'
 
 				return $targetEl
 
@@ -160,7 +165,7 @@ define 'b_dropdown',
 				@closeMock()
 
 
-			_handleChange: (evt) =>
+			_handleChange: () =>
 				option = @_updateSelect @$realOptions.filter(':selected'), false, true, false, true
 				if option and not option.isDisabled()
 					@closeMock()
@@ -211,7 +216,7 @@ define 'b_dropdown',
 
 			closeMock: () =>
 				if not @isDisabled()
-					@$mockMenu.hide()
+					@$mockMenu.removeClass 'b_md_dropdown-visible'
 					@data.isMockOpen = false
 
 				return @
@@ -219,7 +224,7 @@ define 'b_dropdown',
 
 			destroy: () ->
 				# Clean up HTML structure
-				@$selectEl.removeClass 'b_dropdown-select'
+				@$selectEl.removeClass 'b_md_dropdown-select'
 				@$mockEl.remove()
 
 				# Remove event bindings
@@ -233,7 +238,7 @@ define 'b_dropdown',
 			disable: () ->
 				@closeMock()
 				@$selectEl.prop 'disabled', true
-				@$mockEl.addClass 'b_dropdown-disabled'
+				@$mockEl.addClass 'b_md_dropdown-disabled'
 				@data.isDisabled = true
 				return @
 
@@ -246,7 +251,7 @@ define 'b_dropdown',
 
 			enable: () ->
 				@$selectEl.prop 'disabled', false
-				@$mockEl.removeClass 'b_dropdown-disabled'
+				@$mockEl.removeClass 'b_md_dropdown-disabled'
 				@data.isDisabled = false
 				return @;
 
@@ -329,7 +334,7 @@ define 'b_dropdown',
 
 			openMock: () =>
 				if not @isDisabled()
-					@$mockMenu.show()
+					@$mockMenu.addClass 'b_md_dropdown-visible'
 					@data.isMockOpen = true
 				return @
 
@@ -385,13 +390,13 @@ define 'b_dropdown',
 			disable: () ->
 				@disabled = true
 				@$realEl.prop 'disabled', true
-				@$mockEl.addClass 'b_dropdown-disabled'
+				@$mockEl.addClass 'b_md_dropdown-disabled'
 
 
 			enable: () ->
 				@disabled = false
 				@$realEl.prop 'disabled', false
-				@$mockEl.removeClass 'b_dropdown-disabled'
+				@$mockEl.removeClass 'b_md_dropdown-disabled'
 
 
 			get$RealEl: () ->
