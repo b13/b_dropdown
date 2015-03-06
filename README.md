@@ -12,6 +12,11 @@ it can handle three different scenarios.
 
 ## Documentation
 
+### Install with bower
+	
+	bower install https://github.com/b13/b_dropdown.git#v0.1.0 -S
+
+
 ### Base initialization with AMD
 
 	require(['b_dropdown'], function(Dropdown){
@@ -96,19 +101,77 @@ In this case b_dropdown expects that there is already a html structure that is s
 
 Option | Type | Default | Description
 ------ | ---- | ------- | ------------
-closeOnClickOutside | boolean | true | Menu will be closed on click outside of the dropdown menu
-closeOnSelect | boolean | true | Menu will be closed on option selection
-options | array | undefined | Array with option definitions. An option can be either a string, in this case the string is used as label and value, or a object that contains at least a value field and optionally a label field.<br>Examples:<br>["Option 1", "Option2", . . . ]<br><br>[<br>{ label: 'Option 1', value: '1' }<br>{ label: 'Option 2', value: '2' }<br> . . . ]
-placeholder | string | undefined | Header text that is displayed if no option is selected
-selectedOption | number | undefined | Index of the option that should be selected initially
-staticHeader | string | undefined | Static text stays in the header, even if an option is selected
+useFirstOptionAsPlaceholder | false | The first select option will be treated as placeholder.
+placeholder | string | undefined | Header text that is displayed if no option is selected.
+selectedOption | number | undefined | Index of the option that should be selected initially.
+staticHeader | string | undefined | Static text stays in the header, even if an option is selected.
 
-### Events
+### Event handling
+
+It is possible to use the onSelectOption function to register handlers that react on option selections.
+
+	var dropdown = new Dropdown ( ... );
+	
+	dropdown.onSelectOption(function(eventObject){
+		//React on the option selection
+	});
+	
+The	eventObject that will be provided to the handler will look similar to this:
+
+	{
+		dropdown : dropdownObject // Reference to the dropdown object
+		option   : optionObject   // Reference to the option object
+		timestamp: currentTime    // Date object with that represents the time the event was fired
+	}
+
+To learn more about the option object, please have a look down at the Option section.
+
+### Object types and functions
+
+#### Dropdown Definition
+
+##### Functions
+
+Function name | Return value type | Description
+------------- | ----------------- | -----------
+close() | Dropdown | Closes the dropdown and returns the dropdown object;
+destroy() | undefined | Unbinds all dropdown events and destroys the js object.
+disable() | Dropdown | Disables the dropdown and returns it.
+enable() | Dropdown | Enables the dropdown and returns it.
+getOption(various: indexOrElement) | Option/undefined | Returns the searched option object.<br>It expects one of the following:<br>number: optionIndex<br>Option: the option itself<br>jQuery: a jQuery object that wraps the objects HTML element<br>HTMLElement: the objects HTMLElement
+getOptionByIndex(number: index) | Option/undefined | Returns the searche option based on its index.
+getSelectedIndex() | number | Returns either the index of the selected option or -1.
+getSelectedLabel() | string/undefined | Returns the label of the selected option or undefined.
+getSelectedOption() | Option/undefined | Returns the selected option ir undefined.
+getSelectedValue() | string/undefined | Returns the value of the selected option or undefined.
+isDisabled() | boolean | Returns true if the dropdown is disabled or false otherwise.
+isOpen() | boolean | Returns true if the dropdown is open.
+offChange(function: changeHandler) | function/undefined | Unregisteres the provided handler function and returns it if it was actually unregistered.
+onChange(function: changeHandler) | function | Registers a handler that gets called if the selected value changes and returns it.
+open() | Dropdown | Opens the dropdown and returns it. 
+removeAllHandlers() | array (The removed handlers) | Removes all option selection handler and returns them.
+resetSelection() | Dropdown | Resets the dropdown value. Returns the dropdown.
+select(various: indexOrElement, boolean: preventEvent) | Option/undefined | Selects an option and returns it or undefined.
+toggle() | Dropdown | Opens the dropdown if it's closed, or closes it if it's open. Returns the dropdown object.
+
+#### Option Definition
+
+##### Attributes
+
+Attribute name | Type | Description
+-------------- | ---- | -----------
+$el | jQuery | jQuery collection that contains the options HTML element.
+index | number | The index of the option.
+label | string | The label value of the option.
+value | string | Tha value of the option.
 
 
+##### Functions
 
-### Functions
-
-	closeOnSelect
-
+Function name | Return value type | Description
+------------- | ----------------- | -----------
+get$El() | jQuery | Returns a jQuery collection that contains the element that is represented by this option object.
+getIndex() | number | Returns the index of the option.
+getLabel() | string | Returns the label of the option.
+getValue() | string | Returns the value of the option.
 

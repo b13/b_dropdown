@@ -2,210 +2,237 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   define('b_dropdown', ['jquery'], function($) {
-    var Dropdown, Option, __setElementAttribute;
+    var Dropdown, Option;
     Dropdown = (function() {
       Dropdown.prototype.defaultOpts = {
-        closeOnClickOutside: true,
-        closeOnSelect: true
+        hideOriginalSelect: true
       };
 
       function Dropdown(el, opts) {
-        this.toggle = __bind(this.toggle, this);
+        this.toggleMock = __bind(this.toggleMock, this);
         this.select = __bind(this.select, this);
         this.resetSelection = __bind(this.resetSelection, this);
-        this.open = __bind(this.open, this);
-        this.close = __bind(this.close, this);
+        this.openMock = __bind(this.openMock, this);
+        this.closeMock = __bind(this.closeMock, this);
         this._handleWindowClick = __bind(this._handleWindowClick, this);
-        this._handleOptionSelection = __bind(this._handleOptionSelection, this);
-        var $el, $replacement, attribute, attrs, isWrappedByForm, jSONOptions, _i, _len;
-        $el = $(el);
-        isWrappedByForm = Boolean($el.closest('form').length);
+        this._handleToggleBtnClick = __bind(this._handleToggleBtnClick, this);
+        this._handleChange = __bind(this._handleChange, this);
+        this._handleMockOptionSelection = __bind(this._handleMockOptionSelection, this);
+        var renderData;
+        this.$selectEl = $(el);
+        this.$realOptions = this.$selectEl.children('option');
         this.opts = $.extend({}, this.defaultOpts, opts || {});
-        if (this.opts.options) {
-          jSONOptions = this.opts.options;
+        if (this.$selectEl.prop('tagName') !== 'SELECT') {
+          throw "The provided HTML element is no <select> element";
         }
-        if ($el.prop('tagName') === 'SELECT') {
-          attrs = $el.prop('attributes');
-          if (!this.opts.name) {
-            this.opts.name = $el.attr('name');
-          }
-          if (!jSONOptions) {
-            jSONOptions = this._getJSONDataFromSelectStructure($el);
-          }
-          $replacement = $('<div></div>');
-          $el.after($replacement);
-          $el.remove();
-          $el = $replacement;
-          for (_i = 0, _len = attrs.length; _i < _len; _i++) {
-            attribute = attrs[_i];
-            __setElementAttribute($el, attribute);
-          }
-          $el.addClass('b_dropdown');
+        renderData = this._getRenderDataFromSelectStructure(this.$selectEl);
+        if (!this.opts.selectedOption && (renderData.selectedOption != null)) {
+          this.opts.selectedOption = renderData.selectedOption;
         }
-        if (jSONOptions) {
-          $el.empty();
-          this._renderInnerHTMLFromJSON($el, jSONOptions, isWrappedByForm);
-        }
-        this.$el = $el;
-        if (!this.$toggleHeader) {
-          this.$toggleHeader = this.$el.find('.b_dropdown-toggle');
-        }
-        if (!this.$menu) {
-          this.$menu = this.$el.find('ul');
-        }
-        if (!this.$options) {
-          this.$options = this.$menu.children('li');
-        }
-        if (!this.$hiddenInput) {
-          this.$hiddenInput = this.$el.find('input[type=hidden]');
-        }
-        if (this.opts.name) {
-          this.$hiddenInput.attr('name', this.opts.name);
-        }
-        this.selectionHandlers = [];
+        this.$mockEl = $('<div class="b_dropdown"></div>');
+        this.$selectEl.after(this.$mockEl);
+        this.$selectEl.addClass('b_dropdown-select');
+        this._renderMockHTMLFromData(this.$mockEl, renderData);
+        this.$mockToggleHeader = this.$mockEl.find('.b_dropdown-toggle');
+        this.$mockMenu = this.$mockEl.find('ul');
+        this.$mockOptions = this.$mockMenu.children('li');
         this.data = {
-          isOpen: false,
+          isMockOpen: false,
           isDisabled: false,
           ddOptions: this._initDropdownOptions()
         };
+        this.changeHandlers = [];
         if (this.opts.staticHeader) {
-          this.$toggleHeader.html('<span>' + this.opts.staticHeader + '</span>');
+          this.$mockToggleHeader.html('<span>' + this.opts.staticHeader + '</span>');
         }
         if ((this.opts.selectedOption != null) && this.opts.selectedOption >= 0) {
-          this.select(this.opts.selectedOption);
+          this.select(this.opts.selectedOption, true);
         } else {
-          this.select(-1);
+          this.select(0, true);
         }
-        this.bindEvents();
+        if (this.$selectEl.prop('disabled')) {
+          this.disable();
+        }
+        this._bindEvents();
       }
 
-      Dropdown.prototype._renderInnerHTMLFromJSON = function($targetEl, jSONOptions, isWrappedByForm) {
-        var $menuWrap, $newLink, $newOptionEl, isLink, label, option, value, _i, _len;
-        this.toggleHeader = $('<button class="b_dropdown-toggle"></button>');
-        $targetEl.append(this.toggleHeader);
-        $menuWrap = $('<div class="b_dropdown-menuWrap"></div>');
-        $targetEl.append($menuWrap);
-        this.$menu = $('<ul></ul>');
-        $menuWrap.append(this.$menu);
-        for (_i = 0, _len = jSONOptions.length; _i < _len; _i++) {
-          option = jSONOptions[_i];
+      Dropdown.prototype._renderMockHTMLFromData = function($targetEl, renderData) {
+        var $mockMenu, $mockMenuWrap, $newOptionEl, label, option, value, _i, _len, _ref, _results;
+        $targetEl.append($('<button class="b_dropdown-toggle"></button>'));
+        $mockMenuWrap = $('<div class="b_dropdown-menuWrap"></div>');
+        $targetEl.append($mockMenuWrap);
+        $mockMenu = $('<ul></ul>');
+        $mockMenuWrap.append($mockMenu);
+        _ref = renderData.options;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          option = _ref[_i];
           if (typeof option === 'string') {
             label = option;
             value = option;
           } else {
             value = option.value;
             label = option.label || value;
-            isLink = option.isLink || false;
           }
           $newOptionEl = $('<li data-value="' + value + '"></li>');
-          this.$menu.append($newOptionEl);
-          if (isLink) {
-            $newLink = $('<a href="' + (option.href || "") + '"></a>');
-            $newOptionEl.append($newLink);
-          }
+          $mockMenu.append($newOptionEl);
           $newOptionEl.text(label);
+          if (option.disabled) {
+            _results.push($newOptionEl.addClass('b_dropdown-disabled'));
+          } else {
+            _results.push(void 0);
+          }
         }
-        this.$hiddenInput = $('<input type="hidden"></input>');
-        $targetEl.append(this.$hiddenInput);
-        if (isWrappedByForm) {
-          return this.$hiddenInput.wrap('<form></form>');
-        }
+        return _results;
       };
 
-      Dropdown.prototype._getJSONDataFromSelectStructure = function($selectElement) {
-        var $optionsEls, optionsArray;
-        optionsArray = [];
+      Dropdown.prototype._getRenderDataFromSelectStructure = function($selectElement) {
+        var $optionsEls, renderData;
+        renderData = {
+          options: []
+        };
         $optionsEls = $selectElement.children('option');
-        $optionsEls.each(function() {
-          var $link, $option, nextOptionObject;
+        $optionsEls.each(function(index) {
+          var $option, nextOptionObject;
           nextOptionObject = {};
           $option = $(this);
-          $link = $option.children('a');
           nextOptionObject.label = $option.text() || "";
           nextOptionObject.value = $option.val() || nextOptionObject.label;
-          if ($link.length) {
-            nextOptionObject.isLink = true;
-            nextOptionObject.href = $link.attr('href');
+          nextOptionObject.disabled = $option.prop('disabled');
+          nextOptionObject.selected = $option.prop('selected');
+          if (nextOptionObject.selected) {
+            renderData.selectedOption = index;
           }
-          return optionsArray.push(nextOptionObject);
+          return renderData.options.push(nextOptionObject);
         });
-        return optionsArray;
+        return renderData;
       };
 
       Dropdown.prototype._initDropdownOptions = function() {
         var ddOptions, dropddown;
         dropddown = this;
         ddOptions = [];
-        this.$options.each(function() {
+        this.$realOptions.each(function() {
           return ddOptions.push(new Option(dropddown, this));
         });
         return ddOptions;
       };
 
-      Dropdown.prototype.bindEvents = function() {
-        this.$toggleHeader.on('click', this.toggle);
-        this.$options.on('click', this._handleOptionSelection);
+      Dropdown.prototype._bindEvents = function() {
+        this.$mockToggleHeader.on('click', this._handleToggleBtnClick);
+        this.$mockOptions.on('click', this._handleMockOptionSelection);
+        this.$selectEl.on('change', this._handleChange);
         return $(window).on('click', this._handleWindowClick);
       };
 
-      Dropdown.prototype.unbindEvents = function() {
-        this.$toggleHeader.off('click', this.toggle);
-        return $(window).off('click', this._handleWindowClick);
+      Dropdown.prototype._handleMockOptionSelection = function(evt) {
+        this.select(this.$mockOptions.index($(evt.currentTarget)));
+        return this.closeMock();
       };
 
-      Dropdown.prototype._handleOptionSelection = function(evt) {
-        var optionIndex;
-        if (!this.isDisabled()) {
-          evt.preventDefault();
-          optionIndex = this.$options.index($(evt.currentTarget));
-          this.select(optionIndex);
-          if (this.opts.closeOnSelect) {
-            return this.close();
-          }
+      Dropdown.prototype._handleChange = function(evt) {
+        var option;
+        option = this._updateSelect(this.$realOptions.filter(':selected'), false, true, false, true);
+        if (option && !option.isDisabled()) {
+          return this.closeMock();
         }
+      };
+
+      Dropdown.prototype._handleToggleBtnClick = function(evt) {
+        evt.preventDefault();
+        return this.toggleMock();
       };
 
       Dropdown.prototype._handleWindowClick = function(evt) {
-        if (!this.isDisabled() && this.isOpen() && this.opts.closeOnClickOutside && !$.contains(this.$el.get(0), evt.target)) {
-          return this.close();
+        if (!this.isDisabled() && this.isMockOpen() && !$.contains(this.$mockEl.get(0), evt.target)) {
+          return this.closeMock();
         }
       };
 
-      Dropdown.prototype.onSelectOption = function(selectionHandler) {
-        return this.selectionHandlers.push(selectionHandler);
+      Dropdown.prototype._unbindEvents = function() {
+        this.$mockToggleHeader.off('click', this._handleToggleBtnClick);
+        this.$mockOptions.off('click', this._handleMockOptionSelection);
+        this.$selectEl.off('change', this._handleChange);
+        return $(window).off('click', this._handleWindowClick);
       };
 
-      Dropdown.prototype.offSelectOption = function(selectionHandler) {
-        var handlerIndex;
-        handlerIndex = this.selectionHandlers.indexOf(selectionHandler);
-        if (handlerIndex >= 0) {
-          return this.selectionHandlers.splice(handlerIndex, 1);
+      Dropdown.prototype._updateSelect = function(indexOrElement, updateSelect, updateMock, triggerChange, callChangeHandlers) {
+        var changeHandler, option, timestamp, _i, _len, _ref;
+        option = this.getOption(indexOrElement);
+        timestamp = new Date();
+        if (option && !option.isDisabled()) {
+          this.data.selectedOption = option;
+          if (updateSelect) {
+            option.$realEl.prop('selected', true);
+          }
+          if (updateMock) {
+            this.$mockToggleHeader.text(option.getLabel());
+          }
+          if (triggerChange) {
+            this.$selectEl.trigger('change');
+          }
+          if (callChangeHandlers) {
+            _ref = this.changeHandlers;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              changeHandler = _ref[_i];
+              changeHandler.call(this, {
+                dropdown: this,
+                option: option,
+                timestamp: timestamp
+              });
+            }
+          }
         }
+        return option;
       };
 
-      Dropdown.prototype.removeAllHandlers = function() {
-        return this.selectionHandlers = [];
-      };
-
-      Dropdown.prototype.close = function() {
-        if (this.isDisabled()) {
-          return void 0;
+      Dropdown.prototype.closeMock = function() {
+        if (!this.isDisabled()) {
+          this.$mockMenu.hide();
+          this.data.isMockOpen = false;
         }
-        this.$menu.hide();
-        return this.data.isOpen = false;
+        return this;
+      };
+
+      Dropdown.prototype.destroy = function() {
+        this.$selectEl.removeClass('b_dropdown-select');
+        this.$mockEl.remove();
+        this._unbindEvents();
+        delete this;
+        return void 0;
       };
 
       Dropdown.prototype.disable = function() {
-        this.close();
-        this.$el.addClass('b_dropdown-disabled');
-        this.$hiddenInput.prop('disabled', true);
-        return this.data.isDisabled = true;
+        this.closeMock();
+        this.$selectEl.prop('disabled', true);
+        this.$mockEl.addClass('b_dropdown-disabled');
+        this.data.isDisabled = true;
+        return this;
+      };
+
+      Dropdown.prototype.disableOption = function(indexOrElement) {
+        var option;
+        option = this.getOption(indexOrElement);
+        if (option) {
+          option.disable();
+        }
+        return option;
       };
 
       Dropdown.prototype.enable = function() {
-        this.$el.removeClass('b_dropdown-disabled');
-        this.$hiddenInput.prop('disabled', false);
-        return this.data.isDisabled = false;
+        this.$selectEl.prop('disabled', false);
+        this.$mockEl.removeClass('b_dropdown-disabled');
+        this.data.isDisabled = false;
+        return this;
+      };
+
+      Dropdown.prototype.enableOption = function(indexOrElement) {
+        var option;
+        option = this.getOption(indexOrElement);
+        if (option) {
+          option.enable();
+        }
+        return option;
       };
 
       Dropdown.prototype.getOption = function(indexOrElement) {
@@ -222,7 +249,7 @@
           throw "Provided argument is neither a html element nor a number";
         }
         if ($el) {
-          index = this.$options.index($el);
+          index = this.$realOptions.index($el);
         }
         return this.getOptionByIndex(index);
       };
@@ -231,7 +258,7 @@
         if (this.data.ddOptions.length > optionIndex) {
           return this.data.ddOptions[optionIndex];
         } else {
-          return null;
+          return void 0;
         }
       };
 
@@ -251,12 +278,12 @@
         if (selectedOption) {
           return selectedOption.getLabel();
         } else {
-          return null;
+          return void 0;
         }
       };
 
       Dropdown.prototype.getSelectedOption = function() {
-        return this.data.selectedOption || null;
+        return this.data.selectedOption || void 0;
       };
 
       Dropdown.prototype.getSelectedValue = function() {
@@ -265,7 +292,7 @@
         if (selectedOption) {
           return selectedOption.getValue();
         } else {
-          return null;
+          return void 0;
         }
       };
 
@@ -273,77 +300,60 @@
         return this.data.isDisabled;
       };
 
-      Dropdown.prototype.navigateToLink = function(link) {
-        return location.href = link;
+      Dropdown.prototype.isMockOpen = function() {
+        return this.data.isMockOpen || false;
       };
 
-      Dropdown.prototype.open = function() {
-        if (this.isDisabled()) {
-          return void 0;
+      Dropdown.prototype.offChange = function(changeHandler) {
+        var handlerIndex;
+        handlerIndex = this.changeHandlers.indexOf(changeHandler);
+        if (handlerIndex >= 0) {
+          this.changeHandlers.splice(handlerIndex, 1);
+          return changeHandler;
         }
-        this.$menu.show();
-        return this.data.isOpen = true;
+        return void 0;
+      };
+
+      Dropdown.prototype.onChange = function(changeHandler) {
+        this.changeHandlers.push(changeHandler);
+        return changeHandler;
+      };
+
+      Dropdown.prototype.openMock = function() {
+        if (!this.isDisabled()) {
+          this.$mockMenu.show();
+          this.data.isMockOpen = true;
+        }
+        return this;
+      };
+
+      Dropdown.prototype.removeAllHandlers = function() {
+        var removedHandlers;
+        removedHandlers = this.changeHandlers;
+        this.changeHandlers = [];
+        return removedHandlers;
       };
 
       Dropdown.prototype.resetSelection = function() {
-        this.data.selectedOption = void 0;
-        this.$hiddenInput.val('');
+        this.select(0, true);
         if (!this.opts.staticHeader) {
-          this.$toggleHeader.empty();
-          return this.$toggleHeader.html(this.opts.placeholder || "");
+          this.$mockToggleHeader.empty();
+          this.$mockToggleHeader.html(this.opts.placeholder || "");
         }
+        return this;
       };
 
-      Dropdown.prototype.select = function(indexOrElement, preventEvent) {
-        var option, selectionHandler, timestamp, _fn, _i, _len, _ref;
-        option = this.getOption(indexOrElement);
-        if (option) {
-          timestamp = new Date();
-          this.data.selectedOption = option;
-          if (!this.opts.staticHeader) {
-            this.$toggleHeader.empty();
-            this.$toggleHeader.html(option.getLabel());
-          }
-          this.$hiddenInput.val(option.getValue());
-          if (!preventEvent) {
-            _ref = this.selectionHandlers;
-            _fn = (function(_this) {
-              return function(selectionHandler) {
-                return selectionHandler.call(_this, {
-                  dropdown: _this,
-                  option: option,
-                  timestamp: timestamp
-                });
-              };
-            })(this);
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              selectionHandler = _ref[_i];
-              _fn(selectionHandler);
-            }
-          }
-          if (option.isLink && !this.opts.preventLinkNavigation) {
-            return this.navigateToLink(option.href);
-          }
+      Dropdown.prototype.select = function(indexOrElement) {
+        return this._updateSelect(indexOrElement, true, true, true, true);
+      };
+
+      Dropdown.prototype.toggleMock = function() {
+        if (this.isMockOpen()) {
+          this.closeMock();
         } else {
-          return this.resetSelection();
+          this.openMock();
         }
-      };
-
-      Dropdown.prototype.toggle = function() {
-        if (this.isOpen()) {
-          return this.close();
-        } else {
-          return this.open();
-        }
-      };
-
-      Dropdown.prototype.isOpen = function() {
-        return this.data.isOpen || false;
-      };
-
-      Dropdown.prototype.destroy = function() {
-        this.enable();
-        return this.unbindEvents();
+        return this;
       };
 
       return Dropdown;
@@ -351,71 +361,79 @@
     })();
     Option = (function() {
       function Option(dropdown, option) {
-        var $linkEl;
         this.dropdown = dropdown;
         if (option instanceof Option) {
-          this.$el = option.$el;
+          this.$realEl = option.$realEl;
         } else if (option instanceof $) {
-          this.$el = option.eq(0);
+          this.$realEl = option.eq(0);
         } else if (option instanceof HTMLElement) {
-          this.$el = $(option);
+          this.$realEl = $(option);
         } else if (typeof option === 'number') {
           this.index = option;
-          this.$el = this.options.eq(option);
+          this.$realEl = this.dropdown.$realOptions.eq(option);
         } else {
           throw "Provided argument is neither a html element nor a number";
         }
-        $linkEl = this.$el.find('a');
-        this.isLink = $linkEl.length ? true : false;
-        this.href = $linkEl.attr('href');
+        if (this.index == null) {
+          this.index = this.dropdown.$realOptions.index(this.$realEl);
+        }
+        this.$mockEl = this.dropdown.$mockOptions.eq(this.index);
+        this.isDisabled();
+        this.getLabel();
+        this.getValue();
       }
 
-      Option.prototype.get$El = function() {
-        return this.$el;
+      Option.prototype.disable = function() {
+        this.disabled = true;
+        this.$realEl.prop('disabled', true);
+        return this.$mockEl.addClass('b_dropdown-disabled');
       };
 
-      Option.prototype.getIndex = function(refresh) {
-        if (refresh || (this.index == null)) {
-          this.index = this.dropdown.$options.index(this.$el);
+      Option.prototype.enable = function() {
+        this.disabled = false;
+        this.$realEl.prop('disabled', false);
+        return this.$mockEl.removeClass('b_dropdown-disabled');
+      };
+
+      Option.prototype.get$RealEl = function() {
+        return this.$realEl;
+      };
+
+      Option.prototype.get$MockEl = function() {
+        return this.$mockEl;
+      };
+
+      Option.prototype.getIndex = function() {
+        if (this.index == null) {
+          this.index = this.dropdown.$realOptions.index(this.$realEl);
         }
         return this.index;
       };
 
       Option.prototype.getLabel = function(refresh) {
         if (refresh || (this.label == null)) {
-          this.label = this.$el.text();
+          this.label = this.$realEl.text();
         }
         return this.label;
       };
 
       Option.prototype.getValue = function(refresh) {
-        var value;
         if (refresh || (this.value == null)) {
-          if (this.isLink) {
-            value = this.$el.attr('href');
-          } else {
-            value = this.$el.data('value');
-          }
-          if (value == null) {
-            value = this.getLabel(refresh);
-          }
-          this.value = value;
+          this.value = this.$realEl.val() || "";
         }
         return this.value;
       };
 
-      Option.prototype.isLink = function() {
-        return this.isLink;
+      Option.prototype.isDisabled = function(refresh) {
+        if (refresh || (this.disabled == null)) {
+          this.disabled = this.$realEl.prop('disabled');
+        }
+        return this.disabled;
       };
 
       return Option;
 
     })();
-    __setElementAttribute = function($el, attribute) {
-      if (attribute.nodeName !== 'name') {
-        return $el.attr(attribute.nodeName, attribute.value);
-      }
-    };
     return Dropdown;
   });
 
