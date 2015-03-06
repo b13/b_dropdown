@@ -14,54 +14,26 @@ it can handle three different scenarios.
 
 ### Install with bower
 	
-	bower install https://github.com/b13/b_dropdown.git#v0.1.0 -S
+	bower install https://github.com/b13/b_dropdown.git#v1.0.0 -S
 
 
 ### Base initialization with AMD
 
 	require(['b_dropdown'], function(Dropdown){
 	
-    	var newDropdown = new Dropdown(htmlElement, options);
+    	var newDropdown = new Dropdown(selectElement, options);
     	
     });
     
-#### Initialization with provided HTML structure
+#### Standard initialization based on a given select
 In this case b_dropdown expects that there is already a html structure that is similar to the following:
 	
-##### HTML structure	
-	<div id="dropdownId" class="b_dropdown">
-		<button class="b_dropdown-toggle" type="button">Placeholder Text</button>
-		<div class="b_dropdown-menuWrap">
-			<ul>
-				<li data-value="1">Option 1</li>
-				<li data-value="2">Option 2</li>
-				<li data-value="3">Option 3</li>
-				<li data-value="4">Option 4</li>
-				<li data-value="5">Option 5</li>
-			</ul>
-		</div>
-		<form>
-			<input type="hidden">
-		</form>
-	</div>
-	
-##### Example js initialization code	
-
-	require(['jquery','b_dropdown'], function($, Dropdown){
-	
-    	var newDropdown = new Dropdown($('#dropdownId'), { . . . });
-    	
-    });
-    
-    
-#### Initialization with provided select HTML structure 
-
-##### Example Source HTML structure	
-	<select id="dropdownId">
+##### Example select
+	<select id="dropdownId" name="selectName">
 		<option value="1">Option 1</option>
-		<option value="2">Option 2</option>
-		<option value="3">Option 3</option>
-		<option value="4">Option 4</option>
+		<option value="2" disabled>Option 2</option>
+		<option>Option 3</option>
+		<option value="4" selected>Option 4</option>
 		<option value="5">Option 5</option>
 	</select>
 	
@@ -72,29 +44,41 @@ In this case b_dropdown expects that there is already a html structure that is s
     	var newDropdown = new Dropdown($('#dropdownId'), { . . . });
     	
     });
-
-
-#### Initialization with provided JSON data
-
-##### Example Source HTML structure	
-	<div id="dropdownId">
+    
+##### Result HTML structure   
+	<div class="bJS_md_dropdown b_md_dropdown" data-for="dropdownId">
+		<button class="bJS_md_dropdown-toggle b_md_dropdown-toggle">
+			Option 4
+		</button>
+		<div class="b_md_dropdown-menuWrap">
+			<ul>
+				<li data-value="1">                                
+					Option 1 
+				</li>
+				<li data-value="2" class="b_md_dropdown-disabled"> 
+					Option 2
+				</li>
+				<li>                                               
+					Option 3 
+				</li>
+				<li data-value="4">                                
+					Option 4 
+				</li>
+				<li data-value="5">                                  
+					Option 5
+				</li>
+			</ul>
+		</div>
 	</div>
-	
-##### Example js initialization code	
+	<select id="dropdownId" name="selectName" class="b_md_dropdown-select">
+		<option value="1">Option 1</option>
+		<option value="2" disabled>Option 2</option>
+		<option>Option 3</option>
+		<option value="4" selected>Option 4</option>
+		<option value="5">Option 5</option>
+    </select>
+    
 
-	require(['jquery','b_dropdown'], function($, Dropdown){
-	
-    	var newDropdown = new Dropdown($('#dropdownId'), {
-    		options: [
-    			{ label: 'Option 1', value: '1' }
-    			{ label: 'Option 2', value: '2' }
-    			{ label: 'Option 3', value: '3' }
-    			{ label: 'Option 4', value: '4' }
-    			{ label: 'Option 5', value: '5' }
-    		]
-    	});
-    	
-    });
     
 
 ### Settings
