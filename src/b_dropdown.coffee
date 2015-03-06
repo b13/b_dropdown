@@ -6,6 +6,7 @@ define 'b_dropdown',
 		class Dropdown
 
 			defaultOpts:
+				firstOptionIsPlaceholder: false
 				hideOriginalSelect: true
 
 			constructor: (el, opts) ->
@@ -14,6 +15,7 @@ define 'b_dropdown',
 				@$realOptions = @$selectEl.children 'option'
 
 				@opts = $.extend {}, @defaultOpts, opts or {}
+
 
 				# Throw error if the provided element is no select HTML element
 				if @$selectEl.prop('tagName') isnt 'SELECT'
@@ -29,6 +31,7 @@ define 'b_dropdown',
 				# Set the top element of the mock structure
 				@$mockEl = $ '<div class="b_dropdown"></div>'
 				@$selectEl.after @$mockEl
+
 				# Add b_dropdown styling class to the select element
 				@$selectEl.addClass 'b_dropdown-select'
 
@@ -70,8 +73,13 @@ define 'b_dropdown',
 				# Bind all events
 				@_bindEvents()
 
+			###
+			_renderMockHTMLFromData:
+			Renders the mock structure based on information that was extracted from the select structure
 
-			# Renders the mock structure based on information that was extracted from the select structure
+			@param $targetEl
+			@param @renderData
+			###
 			_renderMockHTMLFromData: ($targetEl, renderData) ->
 
 				$targetEl.append $ '<button class="b_dropdown-toggle"></button>'
@@ -82,7 +90,7 @@ define 'b_dropdown',
 				$mockMenu = $ '<ul></ul>'
 				$mockMenuWrap.append $mockMenu
 
-				for option in renderData.options
+				for option, i in renderData.options
 					if typeof option is 'string'
 						label = option
 						value = option
@@ -97,8 +105,19 @@ define 'b_dropdown',
 					if option.disabled
 						$newOptionEl.addClass 'b_dropdown-disabled'
 
+					if i is 0 and	@opts.firstOptionIsPlaceholder
+						$newOptionEl.addClass 'b_dropdown-placeholder'
 
-				#Extract json data form a given html select-option structure
+				return $targetEl
+
+			###
+			_getRenderDataFromSelectStructure:
+			Extract json data form a given html select-option structure
+
+			@param $selectElement
+			@returns {{options: Array}}
+			@private
+			###
 			_getRenderDataFromSelectStructure: ($selectElement) ->
 				renderData =
 					options: []
@@ -322,13 +341,7 @@ define 'b_dropdown',
 
 
 			resetSelection: () =>
-				@select 0, true
-
-				if not @opts.staticHeader
-					@$mockToggleHeader.empty()
-					@$mockToggleHeader.html @opts.placeholder or ""
-
-				return @
+				return @select 0
 
 
 			select: (indexOrElement) =>
