@@ -8,12 +8,14 @@ require [
 	($, Dropdown) ->
 
 		initialize = () ->
-			initBasedDropdown()
+			B.DropdownClass = Dropdown
+			initBaseDropdown()
 
 
-		initBasedDropdown = () ->
+		initBaseDropdown = () ->
 			B.selectBasedDropdown = new Dropdown $('#selectDropdown'),
-				placeholder: "Please select"
+				firstOptionIsPlaceholder: true
+				selectedOption: 4
 
 
 		#document ready

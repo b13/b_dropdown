@@ -5,6 +5,8 @@
     var Dropdown, Option;
     Dropdown = (function() {
       Dropdown.prototype.defaultOpts = {
+        disabled: void 0,
+        firstOptionIsPlaceholder: false,
         hideOriginalSelect: true
       };
 
@@ -29,11 +31,11 @@
         if (!this.opts.selectedOption && (renderData.selectedOption != null)) {
           this.opts.selectedOption = renderData.selectedOption;
         }
-        this.$mockEl = $('<div class="b_dropdown"></div>');
-        this.$selectEl.after(this.$mockEl);
-        this.$selectEl.addClass('b_dropdown-select');
+        this.$mockEl = $('<div class="bJS_md_dropdown b_md_dropdown"></div>');
+        this.$selectEl.before(this.$mockEl);
+        this.$selectEl.addClass('b_md_dropdown-select');
         this._renderMockHTMLFromData(this.$mockEl, renderData);
-        this.$mockToggleHeader = this.$mockEl.find('.b_dropdown-toggle');
+        this.$mockToggleHeader = this.$mockEl.find('.bJS_md_dropdown-toggle');
         this.$mockMenu = this.$mockEl.find('ul');
         this.$mockOptions = this.$mockMenu.children('li');
         this.data = {
@@ -50,23 +52,33 @@
         } else {
           this.select(0, true);
         }
-        if (this.$selectEl.prop('disabled')) {
+        if (this.opts.disabled === false) {
+          this.enable();
+        } else if (this.opts.disabled || this.$selectEl.prop('disabled')) {
           this.disable();
         }
         this._bindEvents();
       }
 
+
+      /*
+      			_renderMockHTMLFromData:
+      			Renders the mock structure based on information that was extracted from the select structure
+      
+      			@param $targetEl
+      			@param @renderData
+       */
+
       Dropdown.prototype._renderMockHTMLFromData = function($targetEl, renderData) {
-        var $mockMenu, $mockMenuWrap, $newOptionEl, label, option, value, _i, _len, _ref, _results;
-        $targetEl.append($('<button class="b_dropdown-toggle"></button>'));
-        $mockMenuWrap = $('<div class="b_dropdown-menuWrap"></div>');
+        var $mockMenu, $mockMenuWrap, $newOptionEl, i, label, option, value, _i, _len, _ref;
+        $targetEl.append($('<button class="bJS_md_dropdown-toggle b_md_dropdown-toggle"></button>'));
+        $mockMenuWrap = $('<div class="b_md_dropdown-menuWrap"></div>');
         $targetEl.append($mockMenuWrap);
         $mockMenu = $('<ul></ul>');
         $mockMenuWrap.append($mockMenu);
         _ref = renderData.options;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          option = _ref[_i];
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+          option = _ref[i];
           if (typeof option === 'string') {
             label = option;
             value = option;
@@ -78,13 +90,24 @@
           $mockMenu.append($newOptionEl);
           $newOptionEl.text(label);
           if (option.disabled) {
-            _results.push($newOptionEl.addClass('b_dropdown-disabled'));
-          } else {
-            _results.push(void 0);
+            $newOptionEl.addClass('b_md_dropdown-disabled');
+          }
+          if (i === 0 && this.opts.firstOptionIsPlaceholder) {
+            $newOptionEl.addClass('b_md_dropdown-placeholder');
           }
         }
-        return _results;
+        return $targetEl;
       };
+
+
+      /*
+      			_getRenderDataFromSelectStructure:
+      			Extract json data form a given html select-option structure
+      
+      			@param $selectElement
+      			@returns {{options: Array}}
+      			@private
+       */
 
       Dropdown.prototype._getRenderDataFromSelectStructure = function($selectElement) {
         var $optionsEls, renderData;
@@ -130,7 +153,7 @@
         return this.closeMock();
       };
 
-      Dropdown.prototype._handleChange = function(evt) {
+      Dropdown.prototype._handleChange = function() {
         var option;
         option = this._updateSelect(this.$realOptions.filter(':selected'), false, true, false, true);
         if (option && !option.isDisabled()) {
@@ -188,14 +211,14 @@
 
       Dropdown.prototype.closeMock = function() {
         if (!this.isDisabled()) {
-          this.$mockMenu.hide();
+          this.$mockMenu.removeClass('b_md_dropdown-visible');
           this.data.isMockOpen = false;
         }
         return this;
       };
 
       Dropdown.prototype.destroy = function() {
-        this.$selectEl.removeClass('b_dropdown-select');
+        this.$selectEl.removeClass('b_md_dropdown-select');
         this.$mockEl.remove();
         this._unbindEvents();
         delete this;
@@ -205,7 +228,7 @@
       Dropdown.prototype.disable = function() {
         this.closeMock();
         this.$selectEl.prop('disabled', true);
-        this.$mockEl.addClass('b_dropdown-disabled');
+        this.$mockEl.addClass('b_md_dropdown-disabled');
         this.data.isDisabled = true;
         return this;
       };
@@ -221,7 +244,7 @@
 
       Dropdown.prototype.enable = function() {
         this.$selectEl.prop('disabled', false);
-        this.$mockEl.removeClass('b_dropdown-disabled');
+        this.$mockEl.removeClass('b_md_dropdown-disabled');
         this.data.isDisabled = false;
         return this;
       };
@@ -321,7 +344,7 @@
 
       Dropdown.prototype.openMock = function() {
         if (!this.isDisabled()) {
-          this.$mockMenu.show();
+          this.$mockMenu.addClass('b_md_dropdown-visible');
           this.data.isMockOpen = true;
         }
         return this;
@@ -335,12 +358,7 @@
       };
 
       Dropdown.prototype.resetSelection = function() {
-        this.select(0, true);
-        if (!this.opts.staticHeader) {
-          this.$mockToggleHeader.empty();
-          this.$mockToggleHeader.html(this.opts.placeholder || "");
-        }
-        return this;
+        return this.select(0);
       };
 
       Dropdown.prototype.select = function(indexOrElement) {
@@ -386,13 +404,13 @@
       Option.prototype.disable = function() {
         this.disabled = true;
         this.$realEl.prop('disabled', true);
-        return this.$mockEl.addClass('b_dropdown-disabled');
+        return this.$mockEl.addClass('b_md_dropdown-disabled');
       };
 
       Option.prototype.enable = function() {
         this.disabled = false;
         this.$realEl.prop('disabled', false);
-        return this.$mockEl.removeClass('b_dropdown-disabled');
+        return this.$mockEl.removeClass('b_md_dropdown-disabled');
       };
 
       Option.prototype.get$RealEl = function() {
