@@ -211,7 +211,7 @@
 
       Dropdown.prototype.closeMock = function() {
         if (!this.isDisabled()) {
-          this.$mockMenu.removeClass('b_md_dropdown-visible');
+          this.$mockEl.removeClass('b_md_dropdown-open');
           this.data.isMockOpen = false;
         }
         return this;
@@ -344,7 +344,7 @@
 
       Dropdown.prototype.openMock = function() {
         if (!this.isDisabled()) {
-          this.$mockMenu.addClass('b_md_dropdown-visible');
+          this.$mockEl.addClass('b_md_dropdown-open');
           this.data.isMockOpen = true;
         }
         return this;

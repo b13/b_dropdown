@@ -216,7 +216,7 @@ define 'b_dropdown',
 
 			closeMock: () =>
 				if not @isDisabled()
-					@$mockMenu.removeClass 'b_md_dropdown-visible'
+					@$mockEl.removeClass 'b_md_dropdown-open'
 					@data.isMockOpen = false
 
 				return @
@@ -334,7 +334,7 @@ define 'b_dropdown',
 
 			openMock: () =>
 				if not @isDisabled()
-					@$mockMenu.addClass 'b_md_dropdown-visible'
+					@$mockEl.addClass 'b_md_dropdown-open'
 					@data.isMockOpen = true
 				return @
 

@@ -43,8 +43,8 @@
 .b_md_dropdown-disabled .b_md_dropdown-toggle {
   background-color: #eeeeee;
 }
-.b_md_dropdown-visible {
-  display: block!important;
+.b_md_dropdown-open ul {
+  display: block;
 }
 select.b_md_dropdown-select {
   display: none;
