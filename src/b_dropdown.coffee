@@ -6,196 +6,237 @@ define 'b_dropdown',
 		class Dropdown
 
 			defaultOpts:
-				closeOnClickOutside: true
-				closeOnSelect: true
+				hideOriginalSelect: true
 
 			constructor: (el, opts) ->
 
-				$el = $ el
-				isWrappedByForm = Boolean $el.closest('form').length
+				@$selectEl = $ el
+				@$realOptions = @$selectEl.children 'option'
 
 				@opts = $.extend {}, @defaultOpts, opts or {}
-				
-				if @opts.options
-					jSONOptions = @opts.options
 
-				if $el.prop('tagName') is 'SELECT'
-					attrs = $el.prop 'attributes'
-					if not @opts.name then @opts.name  = $el.attr 'name'
+				# Throw error if the provided element is no select HTML element
+				if @$selectEl.prop('tagName') isnt 'SELECT'
+					throw "The provided HTML element is no <select> element"
 
-					if not jSONOptions then jSONOptions = @_getJSONDataFromSelectStructure $el
+				# Get render information for the mock structure from the select structure
+				renderData = @_getRenderDataFromSelectStructure @$selectEl
 
-					$replacement = $ '<div></div>'
-					$el.after $replacement
-					$el.remove()
-					$el = $replacement
+				# Get the selected option index from the select structure if no selected option index is set in the opts
+				if not @opts.selectedOption and renderData.selectedOption?
+					@opts.selectedOption = renderData.selectedOption
 
-					__setElementAttribute $el, attribute for attribute in attrs
+				# Set the top element of the mock structure
+				@$mockEl = $ '<div class="b_dropdown"></div>'
+				@$selectEl.after @$mockEl
+				# Add b_dropdown styling class to the select element
+				@$selectEl.addClass 'b_dropdown-select'
 
-					$el.addClass 'b_dropdown'
+				# Render the mock structure based on the extracted information from the select structure
+				@_renderMockHTMLFromData @$mockEl, renderData
 
+				# Get jQuery collections that wrap important HTML elements of the mock structure
+				@$mockToggleHeader = @$mockEl.find '.b_dropdown-toggle'
+				@$mockMenu         = @$mockEl.find 'ul'
+				@$mockOptions      = @$mockMenu.children 'li'
 
-				if jSONOptions
-					$el.empty()
-					@_renderInnerHTMLFromJSON $el, jSONOptions, isWrappedByForm
-
-				@$el = $el
-
-				if not @$toggleHeader then @$toggleHeader = @$el.find '.b_dropdown-toggle'
-				if not @$menu         then @$menu         = @$el.find 'ul'
-				if not @$options      then @$options      = @$menu.children 'li'
-				if not @$hiddenInput  then @$hiddenInput  = @$el.find 'input[type=hidden]'
-
-				if @opts.name then @$hiddenInput.attr 'name', @opts.name
-
-				@selectionHandlers = []
-
+				# Init data object, that saves the state of the dropdown
 				@data =
-					isOpen    : false
-					isDisabled: false
-					ddOptions   : @_initDropdownOptions()
+					isMockOpen : false
+					isDisabled : false
+					ddOptions  : @_initDropdownOptions()
 
-				# Set static header if provided
+				# Array in which the b_dropdown change handlers will be stored
+				@changeHandlers = []
+
+				# Set static header to mock header if provided
 				if @opts.staticHeader
-					@$toggleHeader.html '<span>' + @opts.staticHeader + '</span>'
+					@$mockToggleHeader.html '<span>' + @opts.staticHeader + '</span>'
 
-				# Select initial option if provided or close the menu
+				# - - - - - - - - - - - - - - - - - - - - - - #
+  			#	Trigger functions to update mock correctly
+				# - - - - - - - - - - - - - - - - - - - - - - #
+
+				# Select initial option if provided or the first option
 				if @opts.selectedOption? and @opts.selectedOption >= 0
-					@select @opts.selectedOption
+					@select @opts.selectedOption, true
 				else
-					@select -1
+					@select 0, true
 
+				# Trigger initial disable if select is disabled
+				if @$selectEl.prop 'disabled'
+					@disable()
+
+				# Bind all events
 				@_bindEvents()
 
 
-			_renderInnerHTMLFromJSON: ($targetEl, jSONOptions, isWrappedByForm) ->
+			# Renders the mock structure based on information that was extracted from the select structure
+			_renderMockHTMLFromData: ($targetEl, renderData) ->
 
-				@toggleHeader = $ '<button class="b_dropdown-toggle"></button>'
-				$targetEl.append @toggleHeader
+				$targetEl.append $ '<button class="b_dropdown-toggle"></button>'
 
-				$menuWrap = $ '<div class="b_dropdown-menuWrap"></div>'
-				$targetEl.append $menuWrap
+				$mockMenuWrap = $ '<div class="b_dropdown-menuWrap"></div>'
+				$targetEl.append $mockMenuWrap
 
-				@$menu = $ '<ul></ul>'
-				$menuWrap.append @$menu
+				$mockMenu = $ '<ul></ul>'
+				$mockMenuWrap.append $mockMenu
 
-				for option in jSONOptions
+				for option in renderData.options
 					if typeof option is 'string'
 						label = option
 						value = option
 					else
 						value = option.value
 						label = option.label or value
-						isLink = option.isLink or false
 
 					$newOptionEl = $ '<li data-value="' + value + '"></li>'
-					@$menu.append $newOptionEl
-
-					if isLink
-						$newLink = $ '<a href="' + (option.href or "") + '"></a>'
-						$newOptionEl.append $newLink
+					$mockMenu.append $newOptionEl
 
 					$newOptionEl.text label
-
-				@$hiddenInput = $ '<input type="hidden"></input>'
-				$targetEl.append @$hiddenInput
-
-				if isWrappedByForm then @$hiddenInput.wrap '<form></form>'
+					if option.disabled
+						$newOptionEl.addClass 'b_dropdown-disabled'
 
 
 				#Extract json data form a given html select-option structure
-			_getJSONDataFromSelectStructure: ($selectElement) ->
-				optionsArray = []
+			_getRenderDataFromSelectStructure: ($selectElement) ->
+				renderData =
+					options: []
+
 				$optionsEls = $selectElement.children 'option'
-				$optionsEls.each () ->
+				$optionsEls.each (index) ->
 					nextOptionObject = {}
 					$option = $ @
-					nextOptionObject.label   = $option.text() or ""
-					nextOptionObject.value   = $option.val() or nextOptionObject.label
+					nextOptionObject.label    = $option.text() or ""
+					nextOptionObject.value    = $option.val() or nextOptionObject.label
+					nextOptionObject.disabled = $option.prop 'disabled'
+					nextOptionObject.selected = $option.prop 'selected'
+					if nextOptionObject.selected
+						renderData.selectedOption = index
 
-					optionsArray.push nextOptionObject
+					renderData.options.push nextOptionObject
 
-				return optionsArray
+				return renderData
 
 
 			_initDropdownOptions: () ->
 				dropddown = @
 				ddOptions = []
 
-				@$options.each ()->
+				@$realOptions.each ()->
 					ddOptions.push new Option dropddown, @
 
 				return ddOptions;
 
 
 			_bindEvents: () ->
-				@$toggleHeader.on 'click', @toggle
-				@$options.on 'click', @_handleOptionSelection
+				@$mockToggleHeader.on 'click', @_handleToggleBtnClick
+				@$mockOptions.on 'click', @_handleMockOptionSelection
+				@$selectEl.on 'change', @_handleChange
 				$(window).on 'click', @_handleWindowClick
 
 
-			_unbindEvents: () ->
-				@$toggleHeader.off 'click', @toggle
-				$(window).off 'click', @_handleWindowClick
+			_handleMockOptionSelection: (evt) =>
+				@select @$mockOptions.index $ evt.currentTarget
+				@closeMock()
 
 
-			_handleOptionSelection: (evt) =>
-				if not @isDisabled()
-					evt.preventDefault()
-					optionIndex = @$options.index $ evt.currentTarget
+			_handleChange: (evt) =>
+				option = @_updateSelect @$realOptions.filter(':selected'), false, true, false, true
+				if option and not option.isDisabled()
+					@closeMock()
 
-					@select optionIndex
 
-					if @opts.closeOnSelect then @close()
+			_handleToggleBtnClick: (evt) =>
+				evt.preventDefault()
+				@toggleMock()
 
 
 			_handleWindowClick: (evt) =>
-				if not @isDisabled() and @isOpen() and @opts.closeOnClickOutside and not $.contains @$el.get(0), evt.target
-					@close()
+				if not @isDisabled() and @isMockOpen() and not $.contains @$mockEl.get(0), evt.target
+					@closeMock()
 
 
-			onSelectOption: (selectionHandler) ->
-				@selectionHandlers.push selectionHandler
-				return selectionHandler
+			_unbindEvents: () ->
+				@$mockToggleHeader.off 'click', @_handleToggleBtnClick
+				@$mockOptions.off 'click', @_handleMockOptionSelection
+				@$selectEl.off 'change', @_handleChange
+				$(window).off 'click', @_handleWindowClick
 
 
-			offSelectOption: (selectionHandler) ->
-				handlerIndex = @selectionHandlers.indexOf selectionHandler
+			_updateSelect: (indexOrElement, updateSelect, updateMock, triggerChange, callChangeHandlers) ->
+				option = @getOption indexOrElement
+				timestamp = new Date()
 
-				if handlerIndex >= 0
-					@selectionHandlers.splice handlerIndex, 1
-					return selectionHandler
+				if option and not option.isDisabled()
+					@data.selectedOption = option
 
+					if updateSelect
+						option.$realEl.prop 'selected', true
+
+					if updateMock
+						@$mockToggleHeader.text option.getLabel()
+
+					if triggerChange
+						@$selectEl.trigger 'change'
+
+					if callChangeHandlers
+						for changeHandler in @changeHandlers
+							changeHandler.call @,
+								dropdown : @
+								option   : option
+								timestamp: timestamp
+
+				return option
+
+
+			closeMock: () =>
+				if not @isDisabled()
+					@$mockMenu.hide()
+					@data.isMockOpen = false
+
+				return @
+
+
+			destroy: () ->
+				# Clean up HTML structure
+				@$selectEl.removeClass 'b_dropdown-select'
+				@$mockEl.remove()
+
+				# Remove event bindings
+				@_unbindEvents()
+
+				# Delete this object
+				delete @
 				return undefined
 
 
-			removeAllHandlers: () ->
-				removedHandlers = @selectionHandlers
-				@selectionHandlers = []
-				return removedHandlers
-
-
-			close: () =>
-				if not @isDisabled()
-					@$menu.hide()
-					@data.isOpen = false
-
-				return @
-
-
 			disable: () ->
-				@close()
-				@$el.addClass 'b_dropdown-disabled'
-				@$hiddenInput.prop 'disabled', true
+				@closeMock()
+				@$selectEl.prop 'disabled', true
+				@$mockEl.addClass 'b_dropdown-disabled'
 				@data.isDisabled = true
 				return @
 
+			disableOption: (indexOrElement)	->
+				option = @getOption indexOrElement
+				if option then option.disable()
+
+				return option
+
 
 			enable: () ->
-				@$el.removeClass 'b_dropdown-disabled'
-				@$hiddenInput.prop 'disabled', false
+				@$selectEl.prop 'disabled', false
+				@$mockEl.removeClass 'b_dropdown-disabled'
 				@data.isDisabled = false
 				return @;
+
+
+			enableOption: (indexOrElement) ->
+				option = @getOption indexOrElement
+				if option then option.enable()
+
+				return option
 
 
 			getOption: (indexOrElement) ->
@@ -216,7 +257,7 @@ define 'b_dropdown',
 					throw "Provided argument is neither a html element nor a number"
 
 				if $el
-					index = @$options.index $el
+					index = @$realOptions.index $el
 
 				return @getOptionByIndex index
 
@@ -248,75 +289,55 @@ define 'b_dropdown',
 				return @data.isDisabled
 
 
-			navigateToLink: (link) ->
-				location.href = link
-				return link
+			isMockOpen: () ->
+				return @data.isMockOpen or false
 
 
-			open: () =>
+			offChange: (changeHandler) ->
+				handlerIndex = @changeHandlers.indexOf changeHandler
+
+				if handlerIndex >= 0
+					@changeHandlers.splice handlerIndex, 1
+					return changeHandler
+
+				return undefined
+
+
+			onChange: (changeHandler) ->
+				@changeHandlers.push changeHandler
+				return changeHandler
+
+
+			openMock: () =>
 				if not @isDisabled()
-					@$menu.show()
-					@data.isOpen = true
+					@$mockMenu.show()
+					@data.isMockOpen = true
 				return @
+
+
+			removeAllHandlers: () ->
+				removedHandlers = @changeHandlers
+				@changeHandlers = []
+				return removedHandlers
 
 
 			resetSelection: () =>
-				@data.selectedOption = undefined
-				@$hiddenInput.val ''
+				@select 0, true
 
 				if not @opts.staticHeader
-					@$toggleHeader.empty()
-					@$toggleHeader.html @opts.placeholder or ""
+					@$mockToggleHeader.empty()
+					@$mockToggleHeader.html @opts.placeholder or ""
 
 				return @
 
 
-			select: (indexOrElement, preventEvent) =>
-				option = @getOption indexOrElement
-
-				if option
-					timestamp = new Date()
-
-					@data.selectedOption = option
-
-					if not @opts.staticHeader
-						@$toggleHeader.empty()
-						@$toggleHeader.html option.getLabel()
-
-					@$hiddenInput.val option.getValue()
-
-					if not preventEvent
-						for selectionHandler in @selectionHandlers
-							do (selectionHandler) =>
-								selectionHandler.call @,
-									dropdown : @
-									option   : option
-									timestamp: timestamp
-
-					if option.isLink and not @opts.preventLinkNavigation
-						@navigateToLink option.href
-
-				else
-					#Reset dropdown value if no valid index or element is provided
-					@resetSelection()
-
-				return option
+			select: (indexOrElement) =>
+				return @_updateSelect indexOrElement, true, true, true, true
 
 
-			toggle: () =>
-				if @isOpen() then @close() else @open()
+			toggleMock: () =>
+				if @isMockOpen() then @closeMock() else @openMock()
 				return @
-
-
-			isOpen: () ->
-				return @data.isOpen or false
-
-
-			destroy: () ->
-				@enable()
-				@_unbindEvents()
-				delete @
-				return undefined
 
 
 		# Private dropdown option helper class
@@ -326,73 +347,72 @@ define 'b_dropdown',
 				@dropdown = dropdown
 
 				if option instanceof Option
-					@$el = option.$el
+					@$realEl = option.$realEl
 
 				else if option instanceof $
-					@$el = option.eq 0
+					@$realEl = option.eq 0
 
 				else if option instanceof HTMLElement
-					@$el = $ option
+					@$realEl = $ option
 
 				else if typeof option is 'number'
 					@index = option
-					@$el   = @options.eq option
+					@$realEl = @dropdown.$realOptions.eq option
 
 				else
 					throw "Provided argument is neither a html element nor a number"
 
-				if not @index? then @index = @dropdown.$options.index @$el
-				$linkEl =  @$el.find 'a'
-				@isLink = if $linkEl.length then true else false
-				@href   = $linkEl.attr 'href'
+				if not @index? then @index = @dropdown.$realOptions.index @$realEl
+				@$mockEl  = @dropdown.$mockOptions.eq @index
+				@isDisabled()
+				@getLabel()
+				@getValue()
 
 
-			get$El: () ->
-				return @$el
+			disable: () ->
+				@disabled = true
+				@$realEl.prop 'disabled', true
+				@$mockEl.addClass 'b_dropdown-disabled'
+
+
+			enable: () ->
+				@disabled = false
+				@$realEl.prop 'disabled', false
+				@$mockEl.removeClass 'b_dropdown-disabled'
+
+
+			get$RealEl: () ->
+				return @$realEl
+
+
+			get$MockEl: () ->
+				return @$mockEl
 
 
 			getIndex: () ->
-				if refresh or not @index?
-					@index = @dropdown.$options.index @$el
+				if not @index?
+					@index = @dropdown.$realOptions.index @$realEl
 
 				return @index
 
 
 			getLabel: (refresh) ->
 				if refresh or not @label?
-					@label = @$el.text()
+					@label = @$realEl.text()
 				return @label
-
-
-			getUrl: (refresh) ->
-
-				return if @isLink and @href? then @href else undefined
 
 
 			getValue: (refresh) ->
 				if refresh or not @value?
-
-					if @isLink
-						value = @$el.attr 'href'
-					else
-						value = @$el.data 'value'
-
-					if not value?
-						value = @getLabel refresh
-
-					@value = value
+					@value = @$realEl.val() or ""
 
 				return @value
 
 
-			isLink: () ->
-				return @isLink
-
-
-		#Helper functions
-		__setElementAttribute = ($el, attribute) ->
-			if attribute.nodeName isnt 'name'
-				$el.attr attribute.nodeName, attribute.value
+			isDisabled: (refresh) ->
+				if refresh or not @disabled?
+					@disabled = @$realEl.prop 'disabled'
+				return @disabled
 
 
 		return Dropdown
