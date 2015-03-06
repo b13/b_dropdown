@@ -13,61 +13,18 @@
 <body>
 	<main class="container">
 		<h1>b_dropdown test page</h1>
-		<section>
-			<h2>Base Dropdown with static header text</h2>
-			<div id="baseDropdown-staticHeader" class="b_dropdown">
-				<button class="b_dropdown-toggle" type="button">Base dropdown</button>
-				<div class="b_dropdown-menuWrap">
-					<ul>
-						<li><a href="#">Option 1</a></li>
-						<li><a href="#">Option 2</a></li>
-						<li><a href="#">Option 3</a></li>
-						<li><a href="#">Option 4</a></li>
-						<li><a href="#">Option 5</a></li>
-					</ul>
-				</div>
-				<form>
-					<input type="hidden">
-				</form>
-			</div>
-		</section>
-		<section>
-			<h2>Base Dropdown with dynamic header text</h2>
-			<div id="baseDropdown-dynamicHeader" class="b_dropdown">
-				<button class="b_dropdown-toggle" type="button"></button>
-				<div class="b_dropdown-menuWrap">
-					<ul>
-						<li><a href="#">Option 1</a></li>
-						<li><a href="#">Option 2</a></li>
-						<li><a href="#">Option 3</a></li>
-						<li><a href="#">Option 4</a></li>
-						<li><a href="#">Option 5</a></li>
-					</ul>
-				</div>
-				<form>
-					<input type="hidden" name="thisShouldBeOverridden">
-				</form>
-			</div>
-		</section>
-		<section>
-			<h2>Dropdown based on HTML Select structure</h2>
-			<select id="selectDropdown" name="b13_rulez">
-				<option value="1">Option 1</option>
-				<option>2</option>
-				<option><a href="http://google.de">Google Link</a></option>
-				<option value="4">Option 4</option>
-				<option value="5">Option 5</option>
-			</select>
-		</section>
-		<section>
-			<h2>JSON data based Dropdown in a form</h2>
-			<form>
-				<div id="jsonDropdownInAForm">
-				</div>
-			</form>
-		</section>
-		<section></section>
-		<section></section>
+		<form>
+			<section>
+				<h2>Standard test case</h2>
+				<select id="selectDropdown" name="b13_rulez">
+					<option value="1">Option 1</option>
+					<option selected>2</option>
+					<option>3</option>
+					<option value="4" disabled>Option 4</option>
+					<option value="5">Option 5</option>
+				</select>
+			</section>
+		</form>
 	</main>
 </body>
 </html>
