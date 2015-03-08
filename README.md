@@ -129,11 +129,15 @@ openMock() | Dropdown | Opens the mock menu.
 removeChangeHandlers() | array (The removed handlers) | Removes all handlers that where bound via the onChange function.
 resetSelection() | Dropdown | Selects the first option, no matter if it is used as placeholder or not.
 select(*: indexOrElement) | Option/undefined | Selects an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element.
-setLabelForOption(string: label, *: indexOrElement) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the label if set successfully or otherwise undefined.
-setValueForOption(string: value, *: indexOrElement) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the value if set successfully or otherwise undefined.
+setLabelForOption(*: indexOrElement, string: label) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the label if set successfully or otherwise undefined.
+setValueForOption(*: indexOrElement, string: value) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the value if set successfully or otherwise undefined.
 toggleMock() | Dropdown | Toggles the open state of the mock menu.
 
 #### Option Attributes
+
+The following attributes get only updated if the change of them is triggered via a function in this documentation. 
+Please make shure that these values get updated if you change them differently. An manual update can be achieved by 
+setting the refresh attribute in the getters.
 
 Attribute name | Type | Description
 -------------- | ---- | -----------
@@ -154,3 +158,4 @@ getValue(boolean: refresh) | string | Returns the value of the option. The value
 setLabel(string: label) | string | Sets the text that will be displayed as option and returns it.
 setValue(string: value) | string | Sets the value of the option and returns it.
 isDisabled(refresh) | boolean | Returns true if the option is disabled. The value will only be updated if the functions of the Option or the Dropdown are used to enable or disable the option. In other cases use the refresh attribute to force an update of the value.
+isSelected() | boolean | Return true if the option is selected. Otherwise false.
