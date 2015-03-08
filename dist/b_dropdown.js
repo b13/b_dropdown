@@ -5,9 +5,60 @@
     var Dropdown, Option;
     Dropdown = (function() {
       Dropdown.prototype.defaultOpts = {
-        disabled: true,
+        disabled: void 0,
         firstOptionIsPlaceholder: false,
         hideOriginalSelect: true
+      };
+
+
+      /*
+        		@param $parentEl
+         @param JSONData
+         @param opts
+         @return {Dropdown}
+      
+        		Renders a HTML select structure based on given JSON data, inserts it into the given $parentEl and creates a new
+        		Dropdown based on the rendered select structure.
+       */
+
+      Dropdown.createDropdownFromJSON = function($parentEl, JSONData, opts) {
+        var $selectEl;
+        $selectEl = this._renderSelectFromJSON($parentEl, JSONData);
+        return new Dropdown($selectEl, opts);
+      };
+
+
+      /*
+        		@param $parentEl
+         @param JSONData
+        		@return {jQuery}
+      
+        		Renders a HTML select structure based on given JSON data, inserts it into the given $parentEl.
+       */
+
+      Dropdown._renderSelectFromJSON = function($parentEl, JSONData) {
+        var $newOption, $selectEl, option, _i, _len, _ref;
+        $selectEl = $('<select></select>');
+        $parentEl.append($selectEl);
+        if (JSONData.name) {
+          $selectEl.attr('name', JSONData.name);
+        }
+        _ref = JSONData.options;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          option = _ref[_i];
+          $newOption = $('<option></option>');
+          $selectEl.append($newOption);
+          if (option.value) {
+            $newOption.val(option.value);
+          }
+          if (option.disabled) {
+            $newOption.prop('disabled', true);
+          }
+          if (option.label) {
+            $newOption.text(option.label);
+          }
+        }
+        return $selectEl;
       };
 
       function Dropdown(el, opts) {
@@ -62,15 +113,19 @@
 
 
       /*
-      			_renderMockHTMLFromData:
-      			Renders the mock structure based on information that was extracted from the select structure
+        		@param $targetEl
+         @param renderData
+         @return {jQuery}
+         @private
       
-      			@param $targetEl
-      			@param @renderData
+      			Renders the mock structure based on information that was extracted from the select structure
        */
 
       Dropdown.prototype._renderMockHTMLFromData = function($targetEl, renderData) {
         var $mockMenu, $mockMenuWrap, $newOptionEl, i, label, option, value, _i, _len, _ref;
+        if (renderData.selectId) {
+          $targetEl.data('for', renderData.selectId);
+        }
         $targetEl.append($('<button class="bJS_md_dropdown-toggle b_md_dropdown-toggle"></button>'));
         $mockMenuWrap = $('<div class="b_md_dropdown-menuWrap"></div>');
         $targetEl.append($mockMenuWrap);
@@ -101,19 +156,22 @@
 
 
       /*
-      			_getRenderDataFromSelectStructure:
-      			Extract json data form a given html select-option structure
-      
       			@param $selectElement
-      			@returns {{options: Array}}
+      			@return {{options: Array}}
       			@private
+      
+        		Gets information from the select about how the mock structure must be rendered.
        */
 
       Dropdown.prototype._getRenderDataFromSelectStructure = function($selectElement) {
-        var $optionsEls, renderData;
+        var $optionsEls, renderData, selectId;
         renderData = {
           options: []
         };
+        selectId = $selectElement.attr('id');
+        if (selectId) {
+          renderData.selectId = renderData;
+        }
         $optionsEls = $selectElement.children('option');
         $optionsEls.each(function(index) {
           var $option, nextOptionObject;
@@ -131,6 +189,14 @@
         return renderData;
       };
 
+
+      /*
+      			return {Array}
+        		@private
+      
+        		Initializes the option objects that will be used to manage the dropdowns state.
+       */
+
       Dropdown.prototype._initDropdownOptions = function() {
         var ddOptions, dropddown;
         dropddown = this;
@@ -141,47 +207,121 @@
         return ddOptions;
       };
 
+
+      /*
+        		return {Dropdown}
+        		@private
+      
+        		Binds the needed event handlers to DOM events.
+       */
+
       Dropdown.prototype._bindEvents = function() {
         this.$mockToggleHeader.on('click', this._handleToggleBtnClick);
         this.$mockOptions.on('click', this._handleMockOptionSelection);
         this.$selectEl.on('change', this._handleChange);
-        return $(window).on('click', this._handleWindowClick);
+        $(window).on('click', this._handleWindowClick);
+        return this;
       };
+
+
+      /*
+        		@param evt
+        		@return {void 0}
+        		@private
+      
+        		Handler for the click event on mock option HTML elements.
+        		Calls an update on the dropdown.
+       */
 
       Dropdown.prototype._handleMockOptionSelection = function(evt) {
         this.select(this.$mockOptions.index($(evt.currentTarget)));
-        return this.closeMock();
+        this.closeMock();
+        return void 0;
       };
+
+
+      /*
+        		@return {void 0}
+        		@private
+      
+        		Handler for the select element change event.
+        		Calls an update on the dropdown.
+       */
 
       Dropdown.prototype._handleChange = function() {
         var option;
         option = this._updateSelect(this.$realOptions.filter(':selected'), false, true, false, true);
         if (option && !option.isDisabled()) {
-          return this.closeMock();
+          this.closeMock();
         }
+        return void 0;
       };
+
+
+      /*
+        		@param evt
+        		@return {void 0}
+        		@private
+      
+        		Handler for the click event on the header button of the mock structure.
+        		Toggles the mocks open state.
+       */
 
       Dropdown.prototype._handleToggleBtnClick = function(evt) {
         evt.preventDefault();
-        return this.toggleMock();
+        this.toggleMock();
+        return void 0;
       };
+
+
+      /*
+        		@param evt
+        		@private
+      
+        		Handler that will be bound to the windows click event.
+        		Calls close if the click was outside the select and outside the mock.
+       */
 
       Dropdown.prototype._handleWindowClick = function(evt) {
         if (!this.isDisabled() && this.isMockOpen() && !$.contains(this.$mockEl.get(0), evt.target)) {
-          return this.closeMock();
+          this.closeMock();
         }
+        return void 0;
       };
+
+
+      /*
+        		@return {Dropdown}
+        		@private
+      
+        		Unbinds all handlers that was bound on _bindEvents() from their events.
+       */
 
       Dropdown.prototype._unbindEvents = function() {
         this.$mockToggleHeader.off('click', this._handleToggleBtnClick);
         this.$mockOptions.off('click', this._handleMockOptionSelection);
         this.$selectEl.off('change', this._handleChange);
-        return $(window).off('click', this._handleWindowClick);
+        $(window).off('click', this._handleWindowClick);
+        this.removeChangeHandlers();
+        return this;
       };
 
-      Dropdown.prototype._updateSelect = function(indexOrElement, updateSelect, updateMock, triggerChange, callChangeHandlers) {
-        var changeHandler, option, timestamp, _i, _len, _ref;
-        option = this.getOption(indexOrElement);
+
+      /*
+        		@param indexElementOrOption
+        		@param updateSelect
+        		@param updateMock
+        		@param triggerChange
+        		@param callChangeHandlers
+        		@return {Option}
+        		@private
+      
+        		Private helper function that is essentially for the state and view update of the dropdown.
+       */
+
+      Dropdown.prototype._updateSelect = function(indexElementOrOption, updateSelect, updateMock, triggerChange) {
+        var option, timestamp;
+        option = this.getOption(indexElementOrOption);
         timestamp = new Date();
         if (option && !option.isDisabled()) {
           this.data.selectedOption = option;
@@ -194,20 +334,16 @@
           if (triggerChange) {
             this.$selectEl.trigger('change');
           }
-          if (callChangeHandlers) {
-            _ref = this.changeHandlers;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              changeHandler = _ref[_i];
-              changeHandler.call(this, {
-                dropdown: this,
-                option: option,
-                timestamp: timestamp
-              });
-            }
-          }
         }
         return option;
       };
+
+
+      /*
+      			@return {Dropdown}
+      
+        		Closes the mock menu.
+       */
 
       Dropdown.prototype.closeMock = function() {
         if (!this.isDisabled()) {
@@ -217,6 +353,16 @@
         return this;
       };
 
+
+      /*
+        		@return {void 0}
+      
+        		Destroys the dropdown. That means:
+        		- Removing b_dropdown specific css classes.
+        		- Destroying the mock structure.
+        		- Unbinding all b_dropdown event handlers.
+       */
+
       Dropdown.prototype.destroy = function() {
         this.$selectEl.removeClass('b_md_dropdown-select');
         this.$mockEl.remove();
@@ -224,6 +370,13 @@
         delete this;
         return void 0;
       };
+
+
+      /*
+        		@return {Dropdown}
+      
+        		Sets the select as disabled and emulates a similar behaviour for the mock.
+       */
 
       Dropdown.prototype.disable = function() {
         this.closeMock();
@@ -233,14 +386,29 @@
         return this;
       };
 
-      Dropdown.prototype.disableOption = function(indexOrElement) {
+
+      /*
+        		@param indexElementOrOption
+        		@return {Option}
+      
+        		Disables an option and its mock pendant.
+       */
+
+      Dropdown.prototype.disableOption = function(indexElementOrOption) {
         var option;
-        option = this.getOption(indexOrElement);
+        option = this.getOption(indexElementOrOption);
         if (option) {
           option.disable();
         }
         return option;
       };
+
+
+      /*
+        		@return {Dropdown}
+      
+        		Enables the select and its mock pendant.
+       */
 
       Dropdown.prototype.enable = function() {
         this.$selectEl.prop('disabled', false);
@@ -249,25 +417,59 @@
         return this;
       };
 
-      Dropdown.prototype.enableOption = function(indexOrElement) {
+
+      /*
+        		@param indexElementOrOption
+        		@return {Option}
+      
+        		Enables an option and its mock pendant.
+       */
+
+      Dropdown.prototype.enableOption = function(indexElementOrOption) {
         var option;
-        option = this.getOption(indexOrElement);
+        option = this.getOption(indexElementOrOption);
         if (option) {
           option.enable();
         }
         return option;
       };
 
-      Dropdown.prototype.getOption = function(indexOrElement) {
+
+      /*
+        		@return {string}
+      
+        		Returns the label of an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+        		the corresponding HTML element.
+       */
+
+      Dropdown.prototype.getLabelForOption = function(indexElementOrOption) {
+        var option;
+        option = this.getOption(indexElementOrOption);
+        if (option) {
+          return option.getLabel();
+        }
+        return void 0;
+      };
+
+
+      /*
+        		@param indexElementOrOption
+        		@return {Option}
+      
+        		Returns an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+        		the corresponding HTML element.
+       */
+
+      Dropdown.prototype.getOption = function(indexElementOrOption) {
         var $el, index;
-        if (indexOrElement instanceof Option) {
-          index = this.data.ddOptions.indexOf(indexOrElement);
-        } else if (indexOrElement instanceof $) {
-          $el = indexOrElement;
-        } else if (indexOrElement instanceof HTMLElement) {
-          $el = $(indexOrElement);
-        } else if (typeof indexOrElement === 'number') {
-          index = indexOrElement;
+        if (indexElementOrOption instanceof Option) {
+          index = this.data.ddOptions.indexOf(indexElementOrOption);
+        } else if (indexElementOrOption instanceof $) {
+          $el = indexElementOrOption;
+        } else if (indexElementOrOption instanceof HTMLElement) {
+          $el = $(indexElementOrOption);
+        } else if (typeof indexElementOrOption === 'number') {
+          index = indexElementOrOption;
         } else {
           throw "Provided argument is neither a html element nor a number";
         }
@@ -277,6 +479,14 @@
         return this.getOptionByIndex(index);
       };
 
+
+      /*
+        		@param optionIndex
+        		@return {Option}
+      
+        		Returns an option based on its order in the select structure.
+       */
+
       Dropdown.prototype.getOptionByIndex = function(optionIndex) {
         if (this.data.ddOptions.length > optionIndex) {
           return this.data.ddOptions[optionIndex];
@@ -285,15 +495,29 @@
         }
       };
 
+
+      /*
+        		@return {number}
+      
+        		Returns the index of the selected option.
+       */
+
       Dropdown.prototype.getSelectedIndex = function() {
         var selectedOption;
         selectedOption = this.getSelectedOption();
         if (selectedOption) {
           return selectedOption.getIndex();
         } else {
-          return -1;
+          return 0;
         }
       };
+
+
+      /*
+        		@return {string}
+      
+        		Returns the text that is displayed in the option or an empty string.
+       */
 
       Dropdown.prototype.getSelectedLabel = function() {
         var selectedOption;
@@ -301,13 +525,27 @@
         if (selectedOption) {
           return selectedOption.getLabel();
         } else {
-          return void 0;
+          return "";
         }
       };
 
+
+      /*
+        		@return {Option}
+      
+        		Returns the Option object of the selected option.
+       */
+
       Dropdown.prototype.getSelectedOption = function() {
-        return this.data.selectedOption || void 0;
+        return this.data.selectedOption || this.getOptionByIndex(0);
       };
+
+
+      /*
+        		@return {*}
+      
+        		Returns the value of the selected option.
+       */
 
       Dropdown.prototype.getSelectedValue = function() {
         var selectedOption;
@@ -319,17 +557,56 @@
         }
       };
 
+
+      /*
+      			@return {string}
+      
+      			Returns the value of an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+      			the corresponding HTML element.
+       */
+
+      Dropdown.prototype.getValueOfOption = function(indexElementOrOption) {
+        var option;
+        option = this.getOption(indexElementOrOption);
+        if (option) {
+          return option.getValue();
+        }
+        return void 0;
+      };
+
+
+      /*
+        		@return {boolean}
+      
+        		Returns true if the select is disabled.
+       */
+
       Dropdown.prototype.isDisabled = function() {
         return this.data.isDisabled;
       };
+
+
+      /*
+        		@return {boolean}
+      
+        		Returns true if the mock menu is open.
+       */
 
       Dropdown.prototype.isMockOpen = function() {
         return this.data.isMockOpen || false;
       };
 
+
+      /*
+        		@param changeHandler
+      
+        		Unbinds handlers from the change event.
+       */
+
       Dropdown.prototype.offChange = function(changeHandler) {
         var handlerIndex;
         handlerIndex = this.changeHandlers.indexOf(changeHandler);
+        this.$selectEl.off('change', changeHandler);
         if (handlerIndex >= 0) {
           this.changeHandlers.splice(handlerIndex, 1);
           return changeHandler;
@@ -337,10 +614,25 @@
         return void 0;
       };
 
+
+      /*
+      			@param changeHandler
+      
+      			Binds handlers to the change event.
+       */
+
       Dropdown.prototype.onChange = function(changeHandler) {
         this.changeHandlers.push(changeHandler);
+        this.$selectEl.on('change', changeHandler);
         return changeHandler;
       };
+
+
+      /*
+        		@return {Dropdown}
+      
+        		Opens the mock menu.
+       */
 
       Dropdown.prototype.openMock = function() {
         if (!this.isDisabled()) {
@@ -350,20 +642,88 @@
         return this;
       };
 
-      Dropdown.prototype.removeAllHandlers = function() {
-        var removedHandlers;
+
+      /*
+        		@return {Array}
+      
+        		Removes all handlers that where bound via the onChange function.
+       */
+
+      Dropdown.prototype.removeChangeHandlers = function() {
+        var changeHandler, removedHandlers, _i, _len, _ref;
+        _ref = this.changeHandlers;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          changeHandler = _ref[_i];
+          this.offChange(changeHandler);
+        }
         removedHandlers = this.changeHandlers;
         this.changeHandlers = [];
         return removedHandlers;
       };
 
+
+      /*
+        		@return {Option}
+      
+        		Selects the first option, no matter if it is used as placeholder or not.
+       */
+
       Dropdown.prototype.resetSelection = function() {
         return this.select(0);
       };
 
-      Dropdown.prototype.select = function(indexOrElement) {
-        return this._updateSelect(indexOrElement, true, true, true, true);
+
+      /*
+        		@return {Option}
+      
+        		Selects an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+        		the corresponding HTML element.
+       */
+
+      Dropdown.prototype.select = function(indexElementOrOption) {
+        return this._updateSelect(indexElementOrOption, true, true, true, true);
       };
+
+
+      /*
+        		@return {string}
+      
+        		Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+        		the corresponding HTML element.
+       */
+
+      Dropdown.prototype.setLabelForOption = function(indexElementOrOption, label) {
+        var option;
+        option = this.getOption(indexElementOrOption);
+        if (option) {
+          return option.setLabel(label);
+        }
+        return void 0;
+      };
+
+
+      /*
+      			@return {string}
+      
+      			Sets the value for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+      			the corresponding HTML element.
+       */
+
+      Dropdown.prototype.setValueForOption = function(indexElementOrOption, value) {
+        var option;
+        option = this.getOption(indexElementOrOption);
+        if (option) {
+          return option.setValue(value);
+        }
+        return void 0;
+      };
+
+
+      /*
+        		@return {Dropdown}
+      
+        		Toggles the open state of the mock menu.
+       */
 
       Dropdown.prototype.toggleMock = function() {
         if (this.isMockOpen()) {
@@ -401,32 +761,76 @@
         this.getValue();
       }
 
+
+      /*
+        		@return {Option}
+      
+        		Disables the option and its views.
+       */
+
       Option.prototype.disable = function() {
         this.disabled = true;
         this.$realEl.prop('disabled', true);
-        return this.$mockEl.addClass('b_md_dropdown-disabled');
+        this.$mockEl.addClass('b_md_dropdown-disabled');
+        return this;
       };
+
+
+      /*
+        		@return {Option}
+      
+        		Enables the option and its views.
+       */
 
       Option.prototype.enable = function() {
         this.disabled = false;
         this.$realEl.prop('disabled', false);
-        return this.$mockEl.removeClass('b_md_dropdown-disabled');
+        this.$mockEl.removeClass('b_md_dropdown-disabled');
+        return this;
       };
+
+
+      /*
+        		@return {jQuery}
+      
+        		Returns the corresponding <option> HTML element of the option, wrapped in a jQuery collection.
+       */
 
       Option.prototype.get$RealEl = function() {
         return this.$realEl;
       };
 
+
+      /*
+      			@return {jQuery}
+      
+      			Returns the corresponding mock HTML element of the option, wrapped in a jQuery collection.
+       */
+
       Option.prototype.get$MockEl = function() {
         return this.$mockEl;
       };
 
-      Option.prototype.getIndex = function() {
-        if (this.index == null) {
+
+      /*
+        		@return {number}
+      
+        		Returns the index of the option.
+       */
+
+      Option.prototype.getIndex = function(refresh) {
+        if (refresh || (this.index == null)) {
           this.index = this.dropdown.$realOptions.index(this.$realEl);
         }
         return this.index;
       };
+
+
+      /*
+        		@return {string}
+      
+        		Returns the text that is visible in the option, if available.
+       */
 
       Option.prototype.getLabel = function(refresh) {
         if (refresh || (this.label == null)) {
@@ -435,6 +839,13 @@
         return this.label;
       };
 
+
+      /*
+        		@return {string}
+      
+        		Returns the value of the option, if available.
+       */
+
       Option.prototype.getValue = function(refresh) {
         if (refresh || (this.value == null)) {
           this.value = this.$realEl.val() || "";
@@ -442,11 +853,59 @@
         return this.value;
       };
 
+
+      /*
+        		@return {string}
+      
+        		Sets the text that will be displayed as option.
+       */
+
+      Option.prototype.setLabel = function(label) {
+        this.label = label;
+        this.$realEl.text(label);
+        this.$mockEl.text(label);
+        if (this.isSelected()) {
+          this.dropdown.$mockToggleHeader.text(label);
+        }
+        return label;
+      };
+
+
+      /*
+        		@return {string}
+      
+        		Sets the value of the option.
+       */
+
+      Option.prototype.setValue = function(value) {
+        this.value = value;
+        this.$realEl.val(value);
+        return value;
+      };
+
+
+      /*
+        		@return {boolean}
+      
+        		Returns true if the option is disabled. Otherwise false.
+       */
+
       Option.prototype.isDisabled = function(refresh) {
         if (refresh || (this.disabled == null)) {
           this.disabled = this.$realEl.prop('disabled');
         }
         return this.disabled;
+      };
+
+
+      /*
+        		@return {boolean}
+      
+        		Return true if the option is selected. Otherwise false.
+       */
+
+      Option.prototype.isSelected = function() {
+        return this.$realEl.prop('selected');
       };
 
       return Option;
