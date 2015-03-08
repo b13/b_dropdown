@@ -125,6 +125,8 @@ define 'b_dropdown',
 			###
 			_renderMockHTMLFromData: ($targetEl, renderData) ->
 
+				if renderData.selectId then $targetEl.data 'for', renderData.selectId
+
 				$targetEl.append $ '<button class="bJS_md_dropdown-toggle b_md_dropdown-toggle"></button>'
 
 				$mockMenuWrap = $ '<div class="b_md_dropdown-menuWrap"></div>'
@@ -163,6 +165,9 @@ define 'b_dropdown',
 			_getRenderDataFromSelectStructure: ($selectElement) ->
 				renderData =
 					options: []
+
+				selectId = $selectElement.attr 'id'
+				if selectId then renderData.selectId = renderData
 
 				$optionsEls = $selectElement.children 'option'
 
@@ -393,7 +398,7 @@ define 'b_dropdown',
   		@param indexElementOrOption
   		@return {Option}
 
-  		Enables on option and its mock pendant.
+  		Enables an option and its mock pendant.
 			###
 			enableOption: (indexElementOrOption) ->
 				option = @getOption indexElementOrOption
@@ -405,7 +410,7 @@ define 'b_dropdown',
 			###
   		@return {string}
 
-  		Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+  		Returns the label of an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
   		the corresponding HTML element.
   		###
 			getLabelForOption: (indexElementOrOption) ->
@@ -419,7 +424,7 @@ define 'b_dropdown',
   		@param indexElementOrOption
   		@return {Option}
 
-  		Retrieves an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+  		Returns an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
   		the corresponding HTML element.
 			###
 			getOption: (indexElementOrOption) ->
@@ -449,7 +454,7 @@ define 'b_dropdown',
   		@param optionIndex
   		@return {Option}
 
-  		Retrieves an option based on its order in the select structure.
+  		Returns an option based on its order in the select structure.
 			###
 			getOptionByIndex: (optionIndex) ->
 				return if @data.ddOptions.length > optionIndex then @data.ddOptions[optionIndex] else undefined
@@ -458,7 +463,7 @@ define 'b_dropdown',
 			###
   		@return {number}
 
-  		Retrieves the index of the selected option.
+  		Returns the index of the selected option.
 			###
 			getSelectedIndex: () ->
 				selectedOption = @getSelectedOption()
@@ -497,10 +502,10 @@ define 'b_dropdown',
 			###
 			@return {string}
 
-			Gets the value for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
+			Returns the value of an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
 			the corresponding HTML element.
 			###
-			getValueFromOption: (indexElementOrOption) ->
+			getValueOfOption: (indexElementOrOption) ->
 				option = @getOption indexElementOrOption
 				if option
 					return option.getValue()
@@ -528,11 +533,12 @@ define 'b_dropdown',
 			###
   		@param changeHandler
 
-  		Removes handlers of the custom change event.
+  		Unbinds handlers from the change event.
 			###
 			offChange: (changeHandler) ->
 				handlerIndex = @changeHandlers.indexOf changeHandler
 
+				@$selectEl.off 'change', changeHandler
 				if handlerIndex >= 0
 					@changeHandlers.splice handlerIndex, 1
 					return changeHandler
@@ -542,10 +548,11 @@ define 'b_dropdown',
 			###
 			@param changeHandler
 
-			Adds handlers for the custom change event.
+			Binds handlers to the change event.
 			###
 			onChange: (changeHandler) ->
 				@changeHandlers.push changeHandler
+				@$selectEl.on 'change', changeHandler
 				return changeHandler
 
 
@@ -564,9 +571,11 @@ define 'b_dropdown',
 			###
   		@return {Array}
 
-  		Removes all handlers of custom events.
+  		Removes all handlers that where bound via the onChange function.
 			###
-			removeAllHandlers: () ->
+			removeChangeHandlers: () ->
+				for changeHandler in @changeHandlers
+					@offChange changeHandler
 				removedHandlers = @changeHandlers
 				@changeHandlers = []
 				return removedHandlers
@@ -575,7 +584,7 @@ define 'b_dropdown',
 			###
   		@return {Option}
 
-  		Selects the first option.
+  		Selects the first option, no matter if it is used as placeholder or not.
 			###
 			resetSelection: () =>
 				return @select 0
@@ -702,8 +711,8 @@ define 'b_dropdown',
 
   		Returns the index of the option.
 			###
-			getIndex: () ->
-				if not @index?
+			getIndex: (refresh) ->
+				if refresh or not @index?
 					@index = @dropdown.$realOptions.index @$realEl
 
 				return @index
