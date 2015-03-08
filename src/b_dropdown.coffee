@@ -282,6 +282,7 @@ define 'b_dropdown',
 				@$mockOptions.off 'click', @_handleMockOptionSelection
 				@$selectEl.off 'change', @_handleChange
 				$(window).off 'click', @_handleWindowClick
+				@removeChangeHandlers()
 				return @
 
 
@@ -296,7 +297,7 @@ define 'b_dropdown',
 
   		Private helper function that is essentially for the state and view update of the dropdown.
 			###
-			_updateSelect: (indexElementOrOption, updateSelect, updateMock, triggerChange, callChangeHandlers) ->
+			_updateSelect: (indexElementOrOption, updateSelect, updateMock, triggerChange) ->
 				option = @getOption indexElementOrOption
 				timestamp = new Date()
 
@@ -311,13 +312,6 @@ define 'b_dropdown',
 
 					if triggerChange
 						@$selectEl.trigger 'change'
-
-					if callChangeHandlers
-						for changeHandler in @changeHandlers
-							changeHandler.call @,
-								dropdown : @
-								option   : option
-								timestamp: timestamp
 
 				return option
 
@@ -606,7 +600,7 @@ define 'b_dropdown',
   		Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
   		the corresponding HTML element.
   		###
-			setLabelForOption: (label, indexElementOrOption) ->
+			setLabelForOption: (indexElementOrOption, label) ->
 				option = @getOption indexElementOrOption
 				if option
 					return option.setLabel label
@@ -618,7 +612,7 @@ define 'b_dropdown',
 			Sets the value for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps
 			the corresponding HTML element.
 			###
-			setValueForOption: (value, indexElementOrOption) ->
+			setValueForOption: (indexElementOrOption, value) ->
 				option = @getOption indexElementOrOption
 				if option
 					return option.setValue value
@@ -750,6 +744,8 @@ define 'b_dropdown',
 				@label = label
 				@$realEl.text label
 				@$mockEl.text label
+				if @isSelected()
+					@dropdown.$mockToggleHeader.text label
 				return label
 
 
@@ -766,12 +762,21 @@ define 'b_dropdown',
 			###
   		@return {boolean}
 
-  		Returns true if the optino is disabled. Otherwise false.
+  		Returns true if the option is disabled. Otherwise false.
 			###
 			isDisabled: (refresh) ->
 				if refresh or not @disabled?
 					@disabled = @$realEl.prop 'disabled'
 				return @disabled
+
+
+			###
+  		@return {boolean}
+
+  		Return true if the option is selected. Otherwise false.
+			###
+			isSelected: () ->
+				return @$realEl.prop 'selected'
 
 
 		return Dropdown
