@@ -82,11 +82,11 @@
         if (!this.opts.selectedOption && (renderData.selectedOption != null)) {
           this.opts.selectedOption = renderData.selectedOption;
         }
-        this.$mockEl = $('<div class="bJS_md_dropdown b_md_dropdown"></div>');
+        this.$mockEl = $('<div class="mJS_dropdown m_dropdown"></div>');
         this.$selectEl.before(this.$mockEl);
-        this.$selectEl.addClass('b_md_dropdown-select');
+        this.$selectEl.addClass('m_dropdown-select');
         this._renderMockHTMLFromData(this.$mockEl, renderData);
-        this.$mockToggleHeader = this.$mockEl.find('.bJS_md_dropdown-toggle');
+        this.$mockToggleHeader = this.$mockEl.find('.mJS_dropdown-toggle');
         this.$mockMenu = this.$mockEl.find('ul');
         this.$mockOptions = this.$mockMenu.children('li');
         this.data = {
@@ -126,8 +126,8 @@
         if (renderData.selectId) {
           $targetEl.data('for', renderData.selectId);
         }
-        $targetEl.append($('<button class="bJS_md_dropdown-toggle b_md_dropdown-toggle"></button>'));
-        $mockMenuWrap = $('<div class="b_md_dropdown-menuWrap"></div>');
+        $targetEl.append($('<button class="mJS_dropdown-toggle m_dropdown-toggle"></button>'));
+        $mockMenuWrap = $('<div class="m_dropdown-menuWrap"></div>');
         $targetEl.append($mockMenuWrap);
         $mockMenu = $('<ul></ul>');
         $mockMenuWrap.append($mockMenu);
@@ -145,10 +145,10 @@
           $mockMenu.append($newOptionEl);
           $newOptionEl.text(label);
           if (option.disabled) {
-            $newOptionEl.addClass('b_md_dropdown-disabled');
+            $newOptionEl.addClass('m_dropdown-disabled');
           }
           if (i === 0 && this.opts.firstOptionIsPlaceholder) {
-            $newOptionEl.addClass('b_md_dropdown-placeholder');
+            $newOptionEl.addClass('m_dropdown-placeholder');
           }
         }
         return $targetEl;
@@ -347,7 +347,7 @@
 
       Dropdown.prototype.closeMock = function() {
         if (!this.isDisabled()) {
-          this.$mockEl.removeClass('b_md_dropdown-open');
+          this.$mockEl.removeClass('m_dropdown-open');
           this.data.isMockOpen = false;
         }
         return this;
@@ -364,7 +364,7 @@
        */
 
       Dropdown.prototype.destroy = function() {
-        this.$selectEl.removeClass('b_md_dropdown-select');
+        this.$selectEl.removeClass('m_dropdown-select');
         this.$mockEl.remove();
         this._unbindEvents();
         delete this;
@@ -381,7 +381,7 @@
       Dropdown.prototype.disable = function() {
         this.closeMock();
         this.$selectEl.prop('disabled', true);
-        this.$mockEl.addClass('b_md_dropdown-disabled');
+        this.$mockEl.addClass('m_dropdown-disabled');
         this.data.isDisabled = true;
         return this;
       };
@@ -412,7 +412,7 @@
 
       Dropdown.prototype.enable = function() {
         this.$selectEl.prop('disabled', false);
-        this.$mockEl.removeClass('b_md_dropdown-disabled');
+        this.$mockEl.removeClass('m_dropdown-disabled');
         this.data.isDisabled = false;
         return this;
       };
@@ -636,7 +636,7 @@
 
       Dropdown.prototype.openMock = function() {
         if (!this.isDisabled()) {
-          this.$mockEl.addClass('b_md_dropdown-open');
+          this.$mockEl.addClass('m_dropdown-open');
           this.data.isMockOpen = true;
         }
         return this;
@@ -771,7 +771,7 @@
       Option.prototype.disable = function() {
         this.disabled = true;
         this.$realEl.prop('disabled', true);
-        this.$mockEl.addClass('b_md_dropdown-disabled');
+        this.$mockEl.addClass('m_dropdown-disabled');
         return this;
       };
 
@@ -785,7 +785,7 @@
       Option.prototype.enable = function() {
         this.disabled = false;
         this.$realEl.prop('disabled', false);
-        this.$mockEl.removeClass('b_md_dropdown-disabled');
+        this.$mockEl.removeClass('m_dropdown-disabled');
         return this;
       };
 
