@@ -14,7 +14,8 @@ it can handle three different scenarios.
 
 ### Install with bower
 	
-	bower install https://github.com/b13/b_dropdown.git#v1.0.0 -S
+	bower install b_dropdown -S
+	
 
 ### Base initialization with AMD
 
