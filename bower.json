@@ -2,7 +2,10 @@
   "name": "b_dropdown",
   "description": "b_dropdown",
   "homepage": "https://github.com/b13/b_dropdown",
-  "main": "dist/b_dropdown.js",
+  "main": [
+    "dist/b_dropdown.min.js",
+    "dist/b_dropdown.min.css"
+  ],
   "version": "1.0.0",
   "dependencies": {
     "bootstrap": ">= 2.3.1",
