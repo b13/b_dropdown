@@ -1,8 +1,8 @@
 {
   "name": "b_dropdown",
-  "description": "Enhances HTML selects to be custom styleable and easier to handle.",
+  "description": "Fully stylable javascript select menu.",
   "homepage": "https://github.com/b13/b_dropdown",
-  "keywords": ["dropdown", "select", "custom"],
+  "keywords": ["dropdown", "select", "custom", "stylable", "css", "javascript"],
   "main": [
     "dist/b_dropdown.min.js",
     "dist/b_dropdown.min.css"
