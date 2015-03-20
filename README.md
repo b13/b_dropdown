@@ -113,7 +113,7 @@ destroy() | undefined | Unbinds all change events that was bound with the onChan
 disable() | Dropdown | Disables the dropdown and returns its js object.
 disableOption(*: indexElementOrOption) | Option | Disables an option and its mock pendant.
 enable() | Dropdown | Enables the select and its mock pendant. Returns the Dropdown object.
-enableOption(*: indexElementOrOption) | Enables an option and its mock pendant. Returns the enabled Option.
+enableOption(*: indexElementOrOption) | Option | Enables an option and its mock pendant. Returns the enabled Option.
 getLabelForOption(*: indexElementOrOption) | string/undefined | Returns the label of an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element.
 getOption(*: indexOrElement) | Option/undefined | Returns an option based on its order in the select structure.
 getOptionByIndex(number: index) | Option/undefined | Returns the searche option based on its index.
