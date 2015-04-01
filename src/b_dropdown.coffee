@@ -594,6 +594,14 @@ define 'b_dropdown',
 				return @_updateSelect indexElementOrOption, true, true, true, true
 				
 
+			selectOptionByValue: (value) =>
+				for option in @data.ddOptions
+					if `option.getValue() == value`
+						return @select option
+
+				return undefined
+
+
 			###
   		@return {string}
 
