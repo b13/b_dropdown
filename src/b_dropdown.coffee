@@ -594,6 +594,11 @@ define 'b_dropdown',
 				return @_updateSelect indexElementOrOption, true, true, true, true
 				
 
+			###
+  		@return {option}
+
+  		Selects the first option that contains the given value or does nothing if no option has this value.
+  		###
 			selectOptionByValue: (value) =>
 				for option in @data.ddOptions
 					if `option.getValue() == value`

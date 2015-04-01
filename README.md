@@ -130,6 +130,7 @@ openMock() | Dropdown | Opens the mock menu.
 removeChangeHandlers() | array (The removed handlers) | Removes all handlers that where bound via the onChange function.
 resetSelection() | Dropdown | Selects the first option, no matter if it is used as placeholder or not.
 select(*: indexOrElement) | Option/undefined | Selects an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element.
+selectOptionByValue(number/string: value) | Option/undefined | Selects the first option that contains the given value or does nothing if no option has this value.
 setLabelForOption(*: indexOrElement, string: label) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the label if set successfully or otherwise undefined.
 setValueForOption(*: indexOrElement, string: value) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the value if set successfully or otherwise undefined.
 toggleMock() | Dropdown | Toggles the open state of the mock menu.
