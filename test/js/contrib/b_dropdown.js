@@ -63,6 +63,7 @@
 
       function Dropdown(el, opts) {
         this.toggleMock = __bind(this.toggleMock, this);
+        this.selectOptionByValue = __bind(this.selectOptionByValue, this);
         this.select = __bind(this.select, this);
         this.resetSelection = __bind(this.resetSelection, this);
         this.openMock = __bind(this.openMock, this);
@@ -82,11 +83,11 @@
         if (!this.opts.selectedOption && (renderData.selectedOption != null)) {
           this.opts.selectedOption = renderData.selectedOption;
         }
-        this.$mockEl = $('<div class="mJS_dropdown m_dropdown"></div>');
+        this.$mockEl = $('<div class="bJS_dropdown b_dropdown"></div>');
         this.$selectEl.before(this.$mockEl);
-        this.$selectEl.addClass('m_dropdown-select');
+        this.$selectEl.addClass('b_dropdown-select');
         this._renderMockHTMLFromData(this.$mockEl, renderData);
-        this.$mockToggleHeader = this.$mockEl.find('.mJS_dropdown-toggle');
+        this.$mockToggleHeader = this.$mockEl.find('.bJS_dropdown-toggle');
         this.$mockMenu = this.$mockEl.find('ul');
         this.$mockOptions = this.$mockMenu.children('li');
         this.data = {
@@ -126,8 +127,8 @@
         if (renderData.selectId) {
           $targetEl.data('for', renderData.selectId);
         }
-        $targetEl.append($('<button class="mJS_dropdown-toggle m_dropdown-toggle"></button>'));
-        $mockMenuWrap = $('<div class="m_dropdown-menuWrap"></div>');
+        $targetEl.append($('<button class="bJS_dropdown-toggle b_dropdown-toggle"></button>'));
+        $mockMenuWrap = $('<div class="b_dropdown-menuWrap"></div>');
         $targetEl.append($mockMenuWrap);
         $mockMenu = $('<ul></ul>');
         $mockMenuWrap.append($mockMenu);
@@ -145,10 +146,10 @@
           $mockMenu.append($newOptionEl);
           $newOptionEl.text(label);
           if (option.disabled) {
-            $newOptionEl.addClass('m_dropdown-disabled');
+            $newOptionEl.addClass('b_dropdown-disabled');
           }
           if (i === 0 && this.opts.firstOptionIsPlaceholder) {
-            $newOptionEl.addClass('m_dropdown-placeholder');
+            $newOptionEl.addClass('b_dropdown-placeholder');
           }
         }
         return $targetEl;
@@ -347,7 +348,7 @@
 
       Dropdown.prototype.closeMock = function() {
         if (!this.isDisabled()) {
-          this.$mockEl.removeClass('m_dropdown-open');
+          this.$mockEl.removeClass('b_dropdown-open');
           this.data.isMockOpen = false;
         }
         return this;
@@ -364,7 +365,7 @@
        */
 
       Dropdown.prototype.destroy = function() {
-        this.$selectEl.removeClass('m_dropdown-select');
+        this.$selectEl.removeClass('b_dropdown-select');
         this.$mockEl.remove();
         this._unbindEvents();
         delete this;
@@ -381,7 +382,7 @@
       Dropdown.prototype.disable = function() {
         this.closeMock();
         this.$selectEl.prop('disabled', true);
-        this.$mockEl.addClass('m_dropdown-disabled');
+        this.$mockEl.addClass('b_dropdown-disabled');
         this.data.isDisabled = true;
         return this;
       };
@@ -412,7 +413,7 @@
 
       Dropdown.prototype.enable = function() {
         this.$selectEl.prop('disabled', false);
-        this.$mockEl.removeClass('m_dropdown-disabled');
+        this.$mockEl.removeClass('b_dropdown-disabled');
         this.data.isDisabled = false;
         return this;
       };
@@ -636,7 +637,7 @@
 
       Dropdown.prototype.openMock = function() {
         if (!this.isDisabled()) {
-          this.$mockEl.addClass('m_dropdown-open');
+          this.$mockEl.addClass('b_dropdown-open');
           this.data.isMockOpen = true;
         }
         return this;
@@ -682,6 +683,25 @@
 
       Dropdown.prototype.select = function(indexElementOrOption) {
         return this._updateSelect(indexElementOrOption, true, true, true, true);
+      };
+
+
+      /*
+        		@return {option}
+      
+        		Selects the first option that contains the given value or does nothing if no option has this value.
+       */
+
+      Dropdown.prototype.selectOptionByValue = function(value) {
+        var option, _i, _len, _ref;
+        _ref = this.data.ddOptions;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          option = _ref[_i];
+          if (option.getValue() == value) {
+            return this.select(option);
+          }
+        }
+        return void 0;
       };
 
 
@@ -771,7 +791,7 @@
       Option.prototype.disable = function() {
         this.disabled = true;
         this.$realEl.prop('disabled', true);
-        this.$mockEl.addClass('m_dropdown-disabled');
+        this.$mockEl.addClass('b_dropdown-disabled');
         return this;
       };
 
@@ -785,7 +805,7 @@
       Option.prototype.enable = function() {
         this.disabled = false;
         this.$realEl.prop('disabled', false);
-        this.$mockEl.removeClass('m_dropdown-disabled');
+        this.$mockEl.removeClass('b_dropdown-disabled');
         return this;
       };
 
