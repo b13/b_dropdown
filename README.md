@@ -46,16 +46,16 @@ In this case b_dropdown expects that there is already a html structure that is s
     });
     
 ##### Result HTML structure   
-	<div class="mJS_dropdown m_dropdown" data-for="dropdownId">
-		<button class="mJS_dropdown-toggle m_dropdown-toggle">
+	<div class="bJS_dropdown b_dropdown" data-for="dropdownId">
+		<button class="bJS_dropdown-toggle b_dropdown-toggle">
 			Option 4
 		</button>
-		<div class="m_dropdown-menuWrap">
+		<div class="b_dropdown-menuWrap">
 			<ul>
 				<li data-value="1">                                
 					Option 1 
 				</li>
-				<li data-value="2" class="m_dropdown-disabled"> 
+				<li data-value="2" class="b_dropdown-disabled"> 
 					Option 2
 				</li>
 				<li>                                               
@@ -70,7 +70,7 @@ In this case b_dropdown expects that there is already a html structure that is s
 			</ul>
 		</div>
 	</div>
-	<select id="dropdownId" name="selectName" class="m_dropdown-select">
+	<select id="dropdownId" name="selectName" class="b_dropdown-select">
 		<option value="1">Option 1</option>
 		<option value="2" disabled>Option 2</option>
 		<option>Option 3</option>
@@ -130,6 +130,7 @@ openMock() | Dropdown | Opens the mock menu.
 removeChangeHandlers() | array (The removed handlers) | Removes all handlers that where bound via the onChange function.
 resetSelection() | Dropdown | Selects the first option, no matter if it is used as placeholder or not.
 select(*: indexOrElement) | Option/undefined | Selects an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element.
+selectOptionByValue(number/string: value) | Option/undefined | Selects the first option that contains the given value or does nothing if no option has this value.
 setLabelForOption(*: indexOrElement, string: label) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the label if set successfully or otherwise undefined.
 setValueForOption(*: indexOrElement, string: value) | string/undefined | Sets the label for an option either based on its corresponding index, its HTML element or a jQuery collection that wraps the corresponding HTML element. Returns the value if set successfully or otherwise undefined.
 toggleMock() | Dropdown | Toggles the open state of the mock menu.

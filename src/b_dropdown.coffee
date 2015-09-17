@@ -67,17 +67,17 @@ define 'b_dropdown',
 					@opts.selectedOption = renderData.selectedOption
 
 				# Set the top element of the mock structure
-				@$mockEl = $ '<div class="mJS_dropdown m_dropdown"></div>'
+				@$mockEl = $ '<div class="bJS_dropdown b_dropdown"></div>'
 				@$selectEl.before @$mockEl
 
-				# Add m_dropdown styling class to the select element
-				@$selectEl.addClass 'm_dropdown-select'
+				# Add b_dropdown styling class to the select element
+				@$selectEl.addClass 'b_dropdown-select'
 
 				# Render the mock structure based on the extracted information from the select structure
 				@_renderMockHTMLFromData @$mockEl, renderData
 
 				# Get jQuery collections that wrap important HTML elements of the mock structure
-				@$mockToggleHeader = @$mockEl.find '.mJS_dropdown-toggle'
+				@$mockToggleHeader = @$mockEl.find '.bJS_dropdown-toggle'
 				@$mockMenu         = @$mockEl.find 'ul'
 				@$mockOptions      = @$mockMenu.children 'li'
 
@@ -87,7 +87,7 @@ define 'b_dropdown',
 					isDisabled : false
 					ddOptions  : @_initDropdownOptions()
 
-				# Array in which the m_dropdown change handlers will be stored
+				# Array in which the b_dropdown change handlers will be stored
 				@changeHandlers = []
 
 				# Set static header to mock header if provided
@@ -127,9 +127,9 @@ define 'b_dropdown',
 
 				if renderData.selectId then $targetEl.data 'for', renderData.selectId
 
-				$targetEl.append $ '<button class="mJS_dropdown-toggle m_dropdown-toggle"></button>'
+				$targetEl.append $ '<button class="bJS_dropdown-toggle b_dropdown-toggle"></button>'
 
-				$mockMenuWrap = $ '<div class="m_dropdown-menuWrap"></div>'
+				$mockMenuWrap = $ '<div class="b_dropdown-menuWrap"></div>'
 				$targetEl.append $mockMenuWrap
 
 				$mockMenu = $ '<ul></ul>'
@@ -148,10 +148,10 @@ define 'b_dropdown',
 
 					$newOptionEl.text label
 					if option.disabled
-						$newOptionEl.addClass 'm_dropdown-disabled'
+						$newOptionEl.addClass 'b_dropdown-disabled'
 
 					if i is 0 and	@opts.firstOptionIsPlaceholder
-						$newOptionEl.addClass 'm_dropdown-placeholder'
+						$newOptionEl.addClass 'b_dropdown-placeholder'
 
 				return $targetEl
 
@@ -323,7 +323,7 @@ define 'b_dropdown',
 			###
 			closeMock: () =>
 				if not @isDisabled()
-					@$mockEl.removeClass 'm_dropdown-open'
+					@$mockEl.removeClass 'b_dropdown-open'
 					@data.isMockOpen = false
 
 				return @
@@ -339,7 +339,7 @@ define 'b_dropdown',
 			###
 			destroy: () ->
 				# Clean up HTML structure
-				@$selectEl.removeClass 'm_dropdown-select'
+				@$selectEl.removeClass 'b_dropdown-select'
 				@$mockEl.remove()
 
 				# Remove event bindings
@@ -358,7 +358,7 @@ define 'b_dropdown',
 			disable: () ->
 				@closeMock()
 				@$selectEl.prop 'disabled', true
-				@$mockEl.addClass 'm_dropdown-disabled'
+				@$mockEl.addClass 'b_dropdown-disabled'
 				@data.isDisabled = true
 				return @
 
@@ -383,7 +383,7 @@ define 'b_dropdown',
 			###
 			enable: () ->
 				@$selectEl.prop 'disabled', false
-				@$mockEl.removeClass 'm_dropdown-disabled'
+				@$mockEl.removeClass 'b_dropdown-disabled'
 				@data.isDisabled = false
 				return @;
 
@@ -557,7 +557,7 @@ define 'b_dropdown',
 			###	
 			openMock: () =>
 				if not @isDisabled()
-					@$mockEl.addClass 'm_dropdown-open'
+					@$mockEl.addClass 'b_dropdown-open'
 					@data.isMockOpen = true
 				return @
 
@@ -593,6 +593,19 @@ define 'b_dropdown',
 			select: (indexElementOrOption) =>
 				return @_updateSelect indexElementOrOption, true, true, true, true
 				
+
+			###
+  		@return {option}
+
+  		Selects the first option that contains the given value or does nothing if no option has this value.
+  		###
+			selectOptionByValue: (value) =>
+				for option in @data.ddOptions
+					if `option.getValue() == value`
+						return @select option
+
+				return undefined
+
 
 			###
   		@return {string}
@@ -666,7 +679,7 @@ define 'b_dropdown',
 			disable: () ->
 				@disabled = true
 				@$realEl.prop 'disabled', true
-				@$mockEl.addClass 'm_dropdown-disabled'
+				@$mockEl.addClass 'b_dropdown-disabled'
 				return @
 
 
@@ -678,7 +691,7 @@ define 'b_dropdown',
 			enable: () ->
 				@disabled = false
 				@$realEl.prop 'disabled', false
-				@$mockEl.removeClass 'm_dropdown-disabled'
+				@$mockEl.removeClass 'b_dropdown-disabled'
 				return @
 
 
