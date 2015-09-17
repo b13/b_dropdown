@@ -4,3 +4,4 @@ test/build
 test/css
 test/js
 tmp
+.idea
