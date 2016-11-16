@@ -127,7 +127,7 @@
         if (renderData.selectId) {
           $targetEl.data('for', renderData.selectId);
         }
-        $targetEl.append($('<button class="bJS_dropdown-toggle b_dropdown-toggle"></button>'));
+        $targetEl.append($('<button type="button" class="bJS_dropdown-toggle b_dropdown-toggle"></button>'));
         $mockMenuWrap = $('<div class="b_dropdown-menuWrap"></div>');
         $targetEl.append($mockMenuWrap);
         $mockMenu = $('<ul></ul>');
