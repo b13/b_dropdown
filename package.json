@@ -1,7 +1,7 @@
 {
   "name": "b_dropdown",
   "description": "Dropdown menu AMD module",
-  "version": "2.1",
+  "version": "2.1.0",
   "engines": {
     "node": ">= 0.10.36"
   },
