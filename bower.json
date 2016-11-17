@@ -7,7 +7,7 @@
     "dist/b_dropdown.min.js",
     "dist/b_dropdown.min.css"
   ],
-  "version": "2.0.0",
+  "version": "2.1.0",
   "license": "MIT",
   "authors": [
     {"name": "Benjamin Gröner", "email": "groener@b13.de"}
